@@ -1,0 +1,510 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #edf1f6;
+}
+
+/* ===== ЛЕЙАУТ ===== */
+
+.gz-layout {
+  display: flex;
+  height: 100vh;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* ===== КАРТА ===== */
+
+.gz-map-card {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 12px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.leaflet-map {
+  flex: 1;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.leaflet-image-layer {
+  pointer-events: none;
+}
+
+.add-point-mode {
+  cursor: crosshair;
+}
+
+/* ===== Нижняя панель инструментов ===== */
+
+.gz-toolbar {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  display: inline-flex;
+  gap: 8px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+}
+
+.gz-tool-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.gz-tool-btn.active {
+  background: #8fd437;
+  color: #ffffff;
+}
+
+/* ===== ПРАВАЯ ПАНЕЛЬ ===== */
+
+.gz-sidebar {
+  width: 340px;
+  background: #f8fafc;
+  border-radius: 32px;
+  padding: 18px 18px 20px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gz-side-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gz-logo-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #a4df44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.gz-logo-title {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 14px;
+}
+
+.gz-logo-sub {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.gz-side-section {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.gz-side-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* поиск */
+
+.gz-search {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 10px;
+  background: #f9fafb;
+}
+
+.gz-search-icon {
+  margin-right: 6px;
+  font-size: 13px;
+}
+
+.gz-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  background: transparent;
+}
+
+/* список объектов */
+
+.gz-objects-list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.gz-object-item {
+  width: 100%;
+  border-radius: 999px;
+  border: none;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4ff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.gz-object-item--active {
+  background: #a4df44;
+  color: #ffffff;
+}
+
+.gz-object-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.gz-object-name {
+  flex: 1;
+  text-align: left;
+}
+
+.gz-object-qr {
+  width: 34px;
+  height: 34px;
+  background: #0f172a;
+  border-radius: 10px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gz-show-all {
+  width: 100%;
+  margin-top: 4px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  border: none;
+  font-size: 12px;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+/* блок Маршрут */
+
+.gz-route-section {
+  margin-top: 4px;
+}
+
+.gz-label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.gz-select {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  font-size: 13px;
+  background: #f9fafb;
+}
+
+.gz-route-btn {
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 999px;
+  padding: 9px 12px;
+  border: none;
+  background: #8fd437;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ===== маркеры ===== */
+
+.marker-number {
+  transform: translate(-20px, -20px);
+}
+
+.marker-number__circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #a4df44;
+  border: 3px solid #f5ffe0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #14532d;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.marker-number--active .marker-number__circle {
+  box-shadow: 0 0 0 4px rgba(164, 223, 68, 0.55);
+}
+
+/* ===== МОДАЛКИ ===== */
+
+.gz-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.gz-object-modal {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 18px 20px;
+  max-width: 780px;
+  width: 94%;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+  position: relative;
+}
+
+.gz-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.gz-object-content {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+}
+
+.gz-object-image img {
+  width: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.gz-object-image--empty {
+  width: 100%;
+  height: 190px;
+  border-radius: 18px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.gz-object-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #6b7280;
+  letter-spacing: 0.08em;
+}
+
+.gz-object-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 4px;
+  color: #111827;
+}
+
+.gz-object-textarea {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.gz-object-fields .gz-label {
+  margin-top: 8px;
+}
+
+.gz-input {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 13px;
+}
+
+.gz-object-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.gz-btn-primary,
+.gz-btn-danger {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gz-btn-primary {
+  background: #8fd437;
+  color: #ffffff;
+}
+
+.gz-btn-danger {
+  background: #f97373;
+  color: #ffffff;
+}
+
+.gz-object-desc {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.gz-object-line {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #111827;
+}
+
+/* модалка маршрута */
+
+.gz-route-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px 18px 18px;
+  width: 360px;
+  max-width: 95%;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.38);
+  position: relative;
+}
+
+.gz-route-modal-title {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+/* инпуты/кнопки переиспользуем */
+
+.gz-btn-primary {
+  background: #8fd437;
+  color: #fff;
+}
+
+/* ===== адаптив ===== */
+
+@media (max-width: 1024px) {
+  .gz-layout {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .gz-map-card {
+    height: 60vh;
+  }
+
+  .gz-sidebar {
+    width: 100%;
+  }
+
+  .gz-object-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gz-route-option-btn {
+  width: 100%;
+  text-align: left;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.gz-route-option-btn:hover {
+  background: #eef2ff;
+}
+
+.gz-route-option-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gz-route-option-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.gz-route-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #22c55e;
+  color: white;
+}
