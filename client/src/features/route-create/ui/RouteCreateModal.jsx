@@ -1,4 +1,3 @@
-// src/RouteCreateModal.jsx
 import React, { useState, useEffect } from "react";
 
 const RouteCreateModal = ({ open, points, onClose, onSave }) => {
@@ -19,8 +18,6 @@ const RouteCreateModal = ({ open, points, onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name || !startPointId || !endPointId) return;
-
-    // ВАЖНО: имена полей как на бэке
     onSave({
       name,
       fromPointId: startPointId,
@@ -32,10 +29,7 @@ const RouteCreateModal = ({ open, points, onClose, onSave }) => {
 
   return (
     <div className="gz-modal-backdrop" onClick={onClose}>
-      <div
-        className="gz-route-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="gz-route-modal" onClick={(e) => e.stopPropagation()}>
         <button className="gz-modal-close" onClick={onClose}>
           ×
         </button>

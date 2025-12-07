@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
 
-// Примонтировались -> один раз подгоняем карту под картинку
 const AutoFitBounds = ({ bounds }) => {
   const map = useMap();
 
