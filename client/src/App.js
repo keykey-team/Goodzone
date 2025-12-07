@@ -1,6 +1,4 @@
-// src/App.jsx
-import React from "react";
-import MapWithImage from "./MapWithImage";
+import MapWithImage from "./widget/map/ui/MapWithImage";
 
 const App = () => {
   return <MapWithImage />;
