@@ -203,6 +203,8 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
     toPoint,
     featureGroupRef,
 
+    setRouteFromId,
+    setRouteToId,
     setIsPointModalOpen,
     setIsRouteModalOpen,
     setSelectedRoute,
