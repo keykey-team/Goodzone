@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import logoImg from "../../../assets/logo.png";
 
 const QrSidebar = ({
   isAdmin,
@@ -34,9 +35,8 @@ const QrSidebar = ({
     <aside className="gz-sidebar">
       {/* хедер */}
       <div className="gz-side-header">
-        <div className="gz-logo-circle">GZ</div>
+        <img src={logoImg} alt="logo" />
         <div>
-          <div className="gz-logo-title">GOOD ZONE</div>
           <div className="gz-logo-sub">
             {isAdmin ? "Адмін панель" : "Навігація по комплексу"}
           </div>
