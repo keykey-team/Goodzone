@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Cross from "../../../shared/ui/Cross";
 
 const RouteCreateModal = ({ open, points, onClose, onSave }) => {
   const [name, setName] = useState("");
@@ -31,7 +32,7 @@ const RouteCreateModal = ({ open, points, onClose, onSave }) => {
     <div className="gz-modal-backdrop" onClick={onClose}>
       <div className="gz-route-modal" onClick={(e) => e.stopPropagation()}>
         <button className="gz-modal-close" onClick={onClose}>
-          ×
+          <Cross />
         </button>
         <h3 className="gz-route-modal-title">Новий маршрут</h3>
         <form onSubmit={handleSubmit}>
