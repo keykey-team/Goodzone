@@ -1,7 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+
 import { MapContainer, ImageOverlay, FeatureGroup } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import L from "leaflet";
+import { QRCodeCanvas } from "qrcode.react";
 
 import PointMarker from "../../../entities/point/ui/PointMarker";
 import ActiveRoutePolyline from "../../../features/map-build-route/ui/ActiveRoutePoline";
@@ -21,10 +23,34 @@ import { useMapWithImageModel } from "../model/useMapWithImageModel";
 const MapWithImage = ({ mode = "user" }) => {
   const model = useMapWithImageModel({ mode });
 
+  // 👉 состояние для модалки с большим QR
+  const [qrPoint, setQrPoint] = useState(null);
+  const qrCanvasRef = useRef(null);
+
   // реф на карточку с картой — для scrollIntoView
   const mapCardRef = useRef(null);
   // реф на экземпляр Leaflet-карты — для fitBounds
   const mapRef = useRef(null);
+
+  // Базовый URL сайта (для ссылок в QR)
+  const baseUrl =
+    typeof window !== "undefined" ? window.location.origin : "";
+
+  // 👉 Автооткрытие модалки точки по ?point=ID
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!model.sortedPoints.length) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const pointId = params.get("point");
+    if (!pointId) return;
+
+    const p = model.sortedPoints.find((pt) => pt.id === pointId);
+    if (p) {
+      model.handleSelectPoint(p);
+      model.setIsPointModalOpen(true);
+    }
+  }, [model.sortedPoints, model]);
 
   // обёртка над построением маршрута: строим + скроллим к карте
   const handleBuildRouteAndScroll = (fromId, toId) => {
@@ -52,6 +78,20 @@ const MapWithImage = ({ mode = "user" }) => {
       console.error("Failed to fit bounds for active route", e);
     }
   }, [model.activeRouteCoords]);
+
+  const handleDownloadQr = () => {
+    const canvas = qrCanvasRef.current;
+    if (!canvas) return;
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    const namePart = qrPoint?.number || qrPoint?.id || "qr";
+    link.href = dataUrl;
+    link.download = `point-${namePart}-qr.png`;
+    link.click();
+  };
+
+  const handleCloseQrModal = () => setQrPoint(null);
 
   return (
     <div className="gz-layout">
@@ -147,6 +187,8 @@ const MapWithImage = ({ mode = "user" }) => {
         onBuildRoute={handleBuildRouteAndScroll}
         addPointMode={model.addPointMode}
         onToggleAddPointMode={model.toggleAddPointMode}
+        // 👇 новый проп: открыть модалку с большим QR
+        onOpenQr={setQrPoint}
       />
 
       <PlaceModal
@@ -183,6 +225,38 @@ const MapWithImage = ({ mode = "user" }) => {
         onUpdated={model.handleRouteUpdated}
         onDeleted={model.handleRouteDeleted}
       />
+
+      {/* 👉 Модалка с большим QR для админа */}
+      {model.isAdmin && qrPoint && (
+        <div className="gz-modal-backdrop" onClick={handleCloseQrModal}>
+          <div className="gz-qr-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="gz-modal-close" onClick={handleCloseQrModal}>
+              ×
+            </button>
+
+            <h3 className="gz-qr-title">
+              QR-код об’єкта №{qrPoint.number}
+              {qrPoint.name ? ` — ${qrPoint.name}` : ""}
+            </h3>
+
+            <div className="gz-qr-preview">
+              <QRCodeCanvas
+                ref={qrCanvasRef}
+                value={`${baseUrl}/?point=${encodeURIComponent(qrPoint.id)}`}
+                size={256}
+              />
+            </div>
+
+            <p className="gz-qr-link">
+              Посилання: {baseUrl}/?point={qrPoint.id}
+            </p>
+
+            <button className="gz-btn-primary" onClick={handleDownloadQr}>
+              Завантажити QR
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
