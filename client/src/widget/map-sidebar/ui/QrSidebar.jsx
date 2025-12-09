@@ -1,6 +1,10 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import logoImg from "../../../assets/logo.png";
+import SearchIcon from "../../../shared/icons/SearchIcon";
+import ObjectSelect from "./common/Select";
+import { IconWrapper } from "./common/IconWrapper";
+import Header from "./Header";
 
 const QrSidebar = ({
   isAdmin,
@@ -22,8 +26,7 @@ const QrSidebar = ({
     if (!q) return points;
     return points.filter(
       (p) =>
-        String(p.number).includes(q) ||
-        (p.name || "").toLowerCase().includes(q)
+        String(p.number).includes(q) || (p.name || "").toLowerCase().includes(q)
     );
   }, [search, points]);
 
@@ -34,29 +37,24 @@ const QrSidebar = ({
   return (
     <aside className="gz-sidebar">
       {/* хедер */}
-      <div className="gz-side-header">
-        <img src={logoImg} alt="logo" />
-        <div>
-          <div className="gz-logo-sub">
-            {isAdmin ? "Адмін панель" : "Навігація по комплексу"}
-          </div>
-        </div>
-      </div>
-
+      <Header logoImg={logoImg} isAdmin={isAdmin} />
       {/* блок объектов */}
       <section className="gz-side-section">
         <h3 className="gz-side-title">Об’єкти комплексу</h3>
-        <div className="gz-search">
-          <span className="gz-search-icon">🔍</span>
-          <input
-            className="gz-search-input"
-            placeholder="Пошук за назвою, або номером"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
 
         <div className="gz-objects-list">
+          <div className="gz-search gz-object-item">
+            <IconWrapper>
+              <SearchIcon />
+            </IconWrapper>
+            <input
+              className="gz-search-input"
+              placeholder="Пошук за назвою, або номером"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
           {filtered.map((p) => (
             <button
               key={p.id}
@@ -67,7 +65,7 @@ const QrSidebar = ({
               }
               onClick={() => onSelectPoint(p)}
             >
-              <span className="gz-object-num">{p.number}</span>
+              <IconWrapper>{p.number}</IconWrapper>
               <span className="gz-object-name">{p.name}</span>
 
               {isAdmin && (
@@ -81,7 +79,6 @@ const QrSidebar = ({
 
         <button className="gz-show-all">Показати всі об’єкти</button>
 
-        {/* кнопка для админа: режим добавления точек */}
         {isAdmin && (
           <button
             type="button"
@@ -93,7 +90,9 @@ const QrSidebar = ({
             style={{ marginTop: 10 }}
             onClick={onToggleAddPointMode}
           >
-            {addPointMode ? "Режим додавання точок: УВІМКНЕНО" : "Режим додавання точок"}
+            {addPointMode
+              ? "Режим додавання точок: УВІМКНЕНО"
+              : "Режим додавання точок"}
           </button>
         )}
       </section>
@@ -103,33 +102,19 @@ const QrSidebar = ({
         <section className="gz-side-section gz-route-section">
           <h3 className="gz-side-title">Маршрут</h3>
 
-          <label className="gz-label">Звідки ви йдете</label>
-          <select
-            className="gz-select"
+          <ObjectSelect
+            label="Звідки ви йдете"
             value={routeFromId}
-            onChange={(e) => onChangeRouteFrom(e.target.value)}
-          >
-            <option value="">Оберіть об’єкт</option>
-            {points.map((p) => (
-              <option key={p.id} value={p.id}>
-                #{p.number} — {p.name}
-              </option>
-            ))}
-          </select>
+            onChange={onChangeRouteFrom}
+            points={points}
+          />
 
-          <label className="gz-label">Куди потрібно потрапити</label>
-          <select
-            className="gz-select"
+          <ObjectSelect
+            label="Куди потрібно потрапити"
             value={routeToId}
-            onChange={(e) => onChangeRouteTo(e.target.value)}
-          >
-            <option value="">Оберіть об’єкт</option>
-            {points.map((p) => (
-              <option key={p.id} value={p.id}>
-                #{p.number} — {p.name}
-              </option>
-            ))}
-          </select>
+            onChange={onChangeRouteTo}
+            points={points}
+          />
 
           <button className="gz-route-btn" onClick={handleBuildClick}>
             ПРОКЛАСТИ МАРШРУТ

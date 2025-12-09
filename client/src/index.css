@@ -16,7 +16,6 @@ body,
 
 .gz-layout {
   display: flex;
-  height: 100vh;
   padding: 20px;
   gap: 20px;
 }
@@ -24,6 +23,7 @@ body,
 /* ===== КАРТА ===== */
 
 .gz-map-card {
+  height: 100vh;
   flex: 1;
   background: #ffffff;
   border-radius: 32px;
@@ -88,13 +88,11 @@ body,
 
 .gz-sidebar {
   width: 357px;
-  background: #f8fafc;
   border-radius: 32px;
   padding: 18px 18px 20px;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
 }
 
 .gz-side-header {
@@ -105,7 +103,7 @@ body,
   border-radius: 30px;
   background: #B0CB1F;
   box-shadow: 0 12px 30px 0 rgba(176, 203, 31, 0.20);
-  padding: 21px 27px;
+  padding: 21px 21px;
 }
 
 img {
@@ -117,7 +115,8 @@ img {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: #a4df44;
+  background: rgba(176, 203, 31, 0.80);
+  ;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,84 +142,90 @@ img {
 }
 
 .gz-side-section {
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
+  gap: 16px;
   border-radius: 24px;
-  padding: 14px 14px 16px;
+  padding: 16px 14px 16px;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
 }
 
 .gz-side-title {
-  margin: 0 0 10px;
-  font-size: 13px;
-  color: #4b5563;
+  color: #2F6C4F;
+  text-align: center;
+  font-size: 20px;
+  margin: 0;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 /* поиск */
 
-.gz-search {
-  display: flex;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  margin-bottom: 10px;
-  background: #f9fafb;
-}
+
 
 .gz-search-icon {
-  margin-right: 6px;
-  font-size: 13px;
+  border: 2px solid #B0CB1F;
+  border-radius: 100px;
+  width: 27px;
+  height: 27px;
+}
+
+.icon__wrapper {
+  display: flex;
+  border: 2px solid #2F6C4F;
+  color: #2F6C4F;
+  background-color: #fff;
+  border-radius: 100px;
+  width: 100;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-search {
+  width: 9px;
+  height: 9px;
 }
 
 .gz-search-input {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: 15px;
   background: transparent;
+  font-weight: 500;
 }
 
-/* список объектов */
-
 .gz-objects-list {
-  max-height: 220px;
+  max-height: 381px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: 4px;
 }
 
 .gz-object-item {
-  width: 100%;
-  border-radius: 999px;
-  border: none;
-  padding: 6px 10px;
   display: flex;
+  width: 100%;
   align-items: center;
+  border-radius: 10px;
+  padding: 12px 12px;
+  border: 2px solid #E4E8E5;
+  background: #FFF;
   gap: 8px;
-  background: #f3f4ff;
-  cursor: pointer;
-  font-size: 13px;
+}
+
+.gz-search {
+  border: 2px solid #B0CB1F !important;
+
 }
 
 .gz-object-item--active {
-  background: #a4df44;
+  background: rgba(176, 203, 31, 0.80);
   color: #ffffff;
-}
-
-.gz-object-num {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #16a34a;
 }
 
 .gz-object-name {
@@ -239,18 +244,140 @@ img {
   justify-content: center;
 }
 
-.gz-show-all {
+.gz-custom-select {
+  position: relative;
   width: 100%;
-  margin-top: 4px;
-  border-radius: 999px;
-  padding: 6px 10px;
-  border: none;
-  font-size: 12px;
-  background: #f9fafb;
+  border: 2px solid #E4E8E5;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
   cursor: pointer;
 }
 
+.gz-custom-select__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gz-placeholder {
+  color: #7a7a7a;
+}
+
+.gz-custom-select__arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 15px;
+  height: 9px;
+  background-image: url("data:image/svg+xml;utf8,<svg ... />");
+  background-size: cover;
+  transform: translateY(-50%);
+  transition: transform .25s;
+}
+
+.gz-custom-select.open .gz-custom-select__arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.gz-custom-select__dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 2px solid #E4E8E5;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.gz-custom-select__option {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gz-custom-select__option:hover {
+  background: rgba(176, 203, 31, 0.15);
+}
+
+
+.gz-show-all {
+  all: unset;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  color: #2F6C4F;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  text-transform: uppercase;
+}
+
+
+
 /* блок Маршрут */
+
+/* обёртка */
+.gz-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* "строка" селекта — уже есть у тебя, просто дополним */
+.gz-object-item-select {
+  justify-content: space-between;
+  /* текст слева, стрелка справа */
+}
+
+/* стрелка (используем твой SVG) */
+.gz-custom-select__arrow {
+  display: inline-block;
+  width: 15px;
+  height: 9px;
+  margin-left: auto;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='15' height='9' viewBox='0 0 15 9' fill='none'><path fill-rule='evenodd' clip-rule='evenodd' d='M8.62195 8.54385C8.32684 8.83594 7.92681 9 7.50973 9C7.09264 9 6.69261 8.83594 6.39751 8.54385L0.460761 2.6626C0.165643 2.37 -9.72748e-05 1.9732 9.53674e-07 1.5595C9.91821e-05 1.1458 0.166028 0.749079 0.461286 0.456615C0.756544 0.164152 1.15694 -9.74591e-05 1.5744 4.3385e-08C1.99186 9.75458e-05 2.39218 0.164534 2.6873 0.457135L7.50973 5.23617L12.3322 0.457135C12.6289 0.172875 13.0264 0.0154739 13.439 0.0188335C13.8517 0.0221932 14.2465 0.186044 14.5385 0.475097C14.8304 0.76415 14.9962 1.15528 14.9999 1.56423C15.0037 1.97319 14.8453 2.36726 14.5587 2.66156L8.623 8.54489L8.62195 8.54385Z' fill='%232F6C4F'/></svg>");
+  background-repeat: no-repeat;
+  background-size: 15px 9px;
+  transition: transform 0.25s ease;
+}
+
+/* поворот стрелки при открытом селекте */
+.gz-select-wrapper--open .gz-custom-select__arrow {
+  transform: rotate(180deg);
+}
+
+/* выпадающий список */
+.gz-custom-select__dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+
+  background: #fff;
+  border-radius: 10px;
+  border: 2px solid #E4E8E5;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+/* опция в списке (используем уже твою базу .gz-object-item) */
+.gz-custom-select__option {
+  border-radius: 0;
+  /* чтобы не было "капсул" у каждой */
+  border: none;
+  /* внутри дропдауна лишняя рамка не нужна */
+  background: #fff;
+}
+
+.gz-custom-select__option:hover {
+  background: rgba(176, 203, 31, 0.15);
+}
+
 
 .gz-route-section {
   margin-top: 4px;
@@ -260,8 +387,6 @@ img {
   display: block;
   font-size: 12px;
   color: #6b7280;
-  margin-top: 8px;
-  margin-bottom: 4px;
 }
 
 .gz-select {
@@ -274,19 +399,22 @@ img {
 }
 
 .gz-route-btn {
+  color: #FFF;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  text-transform: uppercase;
   width: 100%;
-  margin-top: 12px;
-  border-radius: 999px;
-  padding: 9px 12px;
+  padding: 8px 0px;
   border: none;
-  background: #8fd437;
+  background: #B0CB1F;
+  border-radius: 20px;
   color: #ffffff;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
 }
-
-/* ===== маркеры ===== */
 
 .marker-number {
   transform: translate(-20px, -20px);
@@ -296,7 +424,8 @@ img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #a4df44;
+  background: rgba(176, 203, 31, 0.80);
+  ;
   border: 3px solid #f5ffe0;
   display: flex;
   align-items: center;
@@ -309,8 +438,6 @@ img {
 .marker-number--active .marker-number__circle {
   box-shadow: 0 0 0 4px rgba(164, 223, 68, 0.55);
 }
-
-/* ===== МОДАЛКИ ===== */
 
 .gz-modal-backdrop {
   position: fixed;
@@ -374,10 +501,11 @@ img {
 }
 
 .gz-object-name {
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 4px;
-  color: #111827;
+  color: #2F6C4F;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
 }
 
 .gz-object-textarea {
@@ -471,11 +599,34 @@ img {
 @media (max-width: 1024px) {
   .gz-layout {
     flex-direction: column;
-    padding: 10px;
+    padding: 0px;
+    border-radius: 0;
   }
 
   .gz-map-card {
-    height: 60vh;
+    flex: 0 0 auto;
+    margin-top: 152px;
+    background: #ffffff;
+    border-radius: 32px;
+    padding: 12px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 420 / 448 !important;
+    overflow: hidden;
+    border-radius: 20px;
+    padding: 0px;
+    box-shadow: none;
+  }
+
+  .gz-side-header {
+    position: absolute;
+    width: 100%;
+    height: 152px;
+    top: 0;
+    left: 0;
+    border-radius: 0px;
   }
 
   .gz-sidebar {
