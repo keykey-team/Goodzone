@@ -1,5 +1,6 @@
 // src/RouteChoiceModal.jsx
 import React from "react";
+import Cross from "../../../shared/ui/Cross";
 
 const RouteChoiceModal = ({
   open,
@@ -35,7 +36,7 @@ const RouteChoiceModal = ({
     <div className="gz-modal-backdrop" onClick={onClose}>
       <div className="gz-route-modal" onClick={(e) => e.stopPropagation()}>
         <button className="gz-modal-close" onClick={onClose}>
-          ×
+          <Cross/>
         </button>
         <h3 className="gz-route-modal-title">Оберіть маршрут</h3>
 

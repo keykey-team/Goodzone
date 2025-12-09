@@ -1,6 +1,9 @@
+
 import React, { useEffect, useState, useRef } from "react";
 
-const apiBase = "http://localhost:4000/api";
+import { apiBase } from "../../../shared/config/apiBase";
+import Cross from "../../../shared/ui/Cross";
+
 
 const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
   const [form, setForm] = useState({
@@ -19,12 +22,16 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
   useEffect(() => {
     if (point) {
       setForm({
-        name: point.name || "",
-        description: point.description || "",
-        workingHours: point.workingHours || "",
-        locationText: point.locationText || "",
+        name: point.name || "Локація комплексу",
+        description:
+          point.description ||
+          "Затишна локація на території комплексу. Тут можна відпочити, провести час з родиною або зробити гарні фото.",
+        workingHours: point.workingHours || "Щодня 09:00 – 22:00",
+        locationText: point.locationText || "Центральна частина комплексу",
         type: point.type || "",
-        imageUrl: point.imageUrl || "",
+        imageUrl:
+          point.imageUrl ||
+          "https://placehold.co/600x400/eee/ccc?text=Фото+тимчасово+відсутнє",
       });
     }
   }, [point]);
@@ -116,8 +123,10 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
   return (
     <div className="gz-modal-backdrop" onClick={handleClose}>
       <div className="gz-object-modal" onClick={(e) => e.stopPropagation()}>
+
         <button className="gz-modal-close" onClick={handleClose}>
-          ×
+          <Cross />
+
         </button>
 
         <div className="gz-object-content">
@@ -221,19 +230,17 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
               </>
             ) : (
               <>
-                {form.description && (
-                  <p className="gz-object-desc">{form.description}</p>
-                )}
-                {form.workingHours && (
-                  <p className="gz-object-line">
-                    <strong>ЧАС РОБОТИ</strong> {form.workingHours}
-                  </p>
-                )}
-                {form.locationText && (
-                  <p className="gz-object-line">
-                    <strong>РОЗТАШУВАННЯ</strong> {form.locationText}
-                  </p>
-                )}
+                <p className="gz-object-desc">{form.description}</p>
+
+                <p className="gz-object-line">
+                  <strong>ЧАС РОБОТИ</strong>
+                  <span>{form.workingHours}</span>
+                </p>
+
+                <p className="gz-object-line">
+                  <strong>РОЗТАШУВАННЯ</strong>
+                  <span>{form.locationText}</span>
+                </p>
               </>
             )}
           </div>

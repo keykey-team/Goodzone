@@ -16,8 +16,10 @@ body,
 
 .gz-layout {
   display: flex;
+  margin: 0 auto;
   padding: 20px;
   gap: 20px;
+  max-width: 1440px;
 }
 
 /* ===== КАРТА ===== */
@@ -89,7 +91,6 @@ body,
 .gz-sidebar {
   width: 357px;
   border-radius: 32px;
-  padding: 18px 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -173,6 +174,12 @@ img {
   height: 27px;
 }
 
+.gz-custom-select__search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 .icon__wrapper {
   display: flex;
   border: 2px solid #2F6C4F;
@@ -231,6 +238,12 @@ img {
 .gz-object-name {
   flex: 1;
   text-align: left;
+  color: #2F6C4F;
+  margin-top: 4px;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
 }
 
 .gz-object-qr {
@@ -569,10 +582,11 @@ img {
   background: #ffffff;
   border-radius: 24px;
   padding: 18px 20px;
-  max-width: 780px;
-  width: 94%;
+  height: max-content;
+  width: 611px;
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
   position: relative;
+  transform: translateX(-178.5px);
 }
 
 .gz-modal-close {
@@ -586,13 +600,13 @@ img {
 }
 
 .gz-object-content {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 20px;
+  display: flex;
+  gap: 16px;
 }
 
 .gz-object-image img {
   width: 100%;
+  height: 100%;
   border-radius: 18px;
   object-fit: cover;
 }
@@ -610,10 +624,12 @@ img {
 }
 
 .gz-object-label {
-  font-size: 11px;
+  color: #7A8B80;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
   text-transform: uppercase;
-  color: #6b7280;
-  letter-spacing: 0.08em;
 }
 
 .gz-object-name {
@@ -674,16 +690,39 @@ img {
 }
 
 .gz-object-desc {
-  margin-top: 10px;
+  margin-top: 4px;
+  color: #0D0D0D;
   font-size: 14px;
-  color: #111827;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 }
 
 .gz-object-line {
-  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 13px;
   color: #111827;
 }
+
+.gz-object-line strong {
+  color: #7A8B80;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  text-transform: uppercase;
+}
+
+.gz-object-line span {
+  color: #2F6C4F;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
 
 /* модалка маршрута */
 
