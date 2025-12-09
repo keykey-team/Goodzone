@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { MapContainer, ImageOverlay, FeatureGroup } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import L from "leaflet";
@@ -20,10 +21,45 @@ import { useMapWithImageModel } from "../model/useMapWithImageModel";
 const MapWithImage = ({ mode = "user" }) => {
   const model = useMapWithImageModel({ mode });
 
+  // реф на карточку с картой — для scrollIntoView
+  const mapCardRef = useRef(null);
+  // реф на экземпляр Leaflet-карты — для fitBounds
+  const mapRef = useRef(null);
+
+  // обёртка над построением маршрута: строим + скроллим к карте
+  const handleBuildRouteAndScroll = (fromId, toId) => {
+    model.handleBuildRoute(fromId, toId);
+
+    if (mapCardRef.current) {
+      mapCardRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  };
+
+  // когда появились coords активного маршрута — приблизиться к ним
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const coords = model.activeRouteCoords;
+
+    if (!coords || coords.length < 2) return;
+
+    try {
+      const routeBounds = L.latLngBounds(coords);
+      mapRef.current.fitBounds(routeBounds, { padding: [40, 40] });
+    } catch (e) {
+      console.error("Failed to fit bounds for active route", e);
+    }
+  }, [model.activeRouteCoords]);
+
   return (
     <div className="gz-layout">
-      <div className="gz-map-card">
+      <div className="gz-map-card" ref={mapCardRef}>
         <MapContainer
+          whenCreated={(mapInstance) => {
+            mapRef.current = mapInstance;
+          }}
           crs={L.CRS.Simple}
           bounds={bounds}
           style={{ width: "100%", height: "100%" }}
@@ -83,6 +119,7 @@ const MapWithImage = ({ mode = "user" }) => {
               />
             ))}
 
+          {/* активный маршрут А→Б */}
           <ActiveRoutePolyline coords={model.activeRouteCoords} />
         </MapContainer>
 
@@ -107,7 +144,7 @@ const MapWithImage = ({ mode = "user" }) => {
         routeToId={model.routeToId}
         onChangeRouteFrom={model.setRouteFromId}
         onChangeRouteTo={model.setRouteToId}
-        onBuildRoute={model.handleBuildRoute}
+        onBuildRoute={handleBuildRouteAndScroll}
         addPointMode={model.addPointMode}
         onToggleAddPointMode={model.toggleAddPointMode}
       />
