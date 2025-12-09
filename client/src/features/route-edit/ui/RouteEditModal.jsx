@@ -1,5 +1,6 @@
 // src/RouteEditModal.jsx
 import React, { useEffect, useState } from "react";
+import Cross from "../../../shared/ui/Cross";
 
 const apiBase = "http://localhost:4000/api";
 
@@ -76,7 +77,7 @@ const RouteEditModal = ({
     <div className="gz-modal-backdrop" onClick={onClose}>
       <div className="gz-route-modal" onClick={(e) => e.stopPropagation()}>
         <button className="gz-modal-close" onClick={onClose}>
-          ×
+          <Cross />
         </button>
         <h3 className="gz-route-modal-title">Маршрут #{route.id}</h3>
 

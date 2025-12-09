@@ -36,9 +36,7 @@ const QrSidebar = ({
 
   return (
     <aside className="gz-sidebar">
-      {/* хедер */}
       <Header logoImg={logoImg} isAdmin={isAdmin} />
-      {/* блок объектов */}
       <section className="gz-side-section">
         <h3 className="gz-side-title">Об’єкти комплексу</h3>
 
