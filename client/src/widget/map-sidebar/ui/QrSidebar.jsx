@@ -18,8 +18,12 @@ const QrSidebar = ({
   onBuildRoute,
   addPointMode,
   onToggleAddPointMode,
+  onOpenQr,
 }) => {
   const [search, setSearch] = useState("");
+
+  const baseUrl =
+    typeof window !== "undefined" ? window.location.origin : "";
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -36,9 +40,7 @@ const QrSidebar = ({
 
   return (
     <aside className="gz-sidebar">
-      {/* хедер */}
       <Header logoImg={logoImg} isAdmin={isAdmin} />
-      {/* блок объектов */}
       <section className="gz-side-section">
         <h3 className="gz-side-title">Об’єкти комплексу</h3>
 
@@ -55,26 +57,37 @@ const QrSidebar = ({
             />
           </div>
 
-          {filtered.map((p) => (
-            <button
-              key={p.id}
-              className={
-                selectedPoint?.id === p.id
-                  ? "gz-object-item gz-object-item--active"
-                  : "gz-object-item"
-              }
-              onClick={() => onSelectPoint(p)}
-            >
-              <IconWrapper>{p.number}</IconWrapper>
-              <span className="gz-object-name">{p.name}</span>
+          {filtered.map((p) => {
+            const qrUrl = `${baseUrl}/?point=${encodeURIComponent(p.id)}`;
 
-              {isAdmin && (
-                <span className="gz-object-qr">
-                  <QRCodeCanvas value={p.id} size={32} />
-                </span>
-              )}
-            </button>
-          ))}
+            return (
+              <button
+                key={p.id}
+                className={
+                  selectedPoint?.id === p.id
+                    ? "gz-object-item gz-object-item--active"
+                    : "gz-object-item"
+                }
+                onClick={() => onSelectPoint(p)}
+              >
+                <IconWrapper>{p.number}</IconWrapper>
+                <span className="gz-object-name">{p.name}</span>
+
+                {isAdmin && (
+                  <span
+                    className="gz-object-qr"
+                    title="Відкрити та завантажити QR"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenQr && onOpenQr(p);
+                    }}
+                  >
+                    <QRCodeCanvas value={qrUrl} size={32} />
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <button className="gz-show-all">Показати всі об’єкти</button>
@@ -97,7 +110,6 @@ const QrSidebar = ({
         )}
       </section>
 
-      {/* блок "Маршрут" только для пользователя */}
       {!isAdmin && (
         <section className="gz-side-section gz-route-section">
           <h3 className="gz-side-title">Маршрут</h3>

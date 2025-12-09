@@ -142,37 +142,41 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
   };
 
   const handleBuildRoute = async (fromId, toId) => {
-    setRouteFromId(fromId);
-    setRouteToId(toId);
-    setActiveRouteCoords([]);
-    setRouteChoiceOpen(false);
-    setRouteVariants([]);
+  setRouteFromId(fromId);
+  setRouteToId(toId);
+  setActiveRouteCoords([]);
+  setRouteChoiceOpen(false);
+  setRouteVariants([]);
 
-    if (!fromId || !toId || fromId === toId) return;
+  if (!fromId || !toId || fromId === toId) return;
 
-    try {
-      const variants = await getRouteVariants(fromId, toId);
+  try {
+    // ПЕРЕДАЁМ ВСЕ МАРШРУТЫ
+    const variants = await getRouteVariants(fromId, toId, routes, {
+      maxDepth: 10,      // можно подправить под свои масштабы
+      maxVariants: 200,  // лимит на количество найденных путей
+    });
 
-      if (!variants.length) {
-        const from = points.find((p) => p.id === fromId);
-        const to = points.find((p) => p.id === toId);
-        if (from && to) {
-          setActiveRouteCoords([from.coords, to.coords]);
-        }
-        return;
+    if (!variants.length) {
+      const from = points.find((p) => p.id === fromId);
+      const to = points.find((p) => p.id === toId);
+      if (from && to) {
+        setActiveRouteCoords([from.coords, to.coords]);
       }
-
-      if (variants.length === 1) {
-        setActiveRouteCoords(variants[0].coords || []);
-        return;
-      }
-
-      setRouteVariants(variants);
-      setRouteChoiceOpen(true);
-    } catch (e) {
-      console.error(e);
+      return;
     }
-  };
+
+    if (variants.length === 1) {
+      setActiveRouteCoords(variants[0].coords || []);
+      return;
+    }
+
+    setRouteVariants(variants);
+    setRouteChoiceOpen(true);
+  } catch (e) {
+    console.error(e);
+  }
+};
 
   const fromPoint = points.find((p) => p.id === routeFromId);
   const toPoint = points.find((p) => p.id === routeToId);

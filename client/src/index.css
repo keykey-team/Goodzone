@@ -439,15 +439,132 @@ img {
   box-shadow: 0 0 0 4px rgba(164, 223, 68, 0.55);
 }
 
+/* Бэкдроп у тебя, скорее всего, уже есть (.gz-modal-backdrop),
+   но на всякий случай можно убедиться, что он над картой */
 .gz-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.35);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
+
+/* Контейнер модалки с QR */
+.gz-qr-modal {
+  position: relative;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 24px 20px;
+  width: min(420px, 100% - 32px);
+  max-height: calc(100vh - 40px);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* Крестик */
+.gz-qr-modal .gz-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Заголовок */
+.gz-qr-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  padding-right: 32px; /* чтобы крестик не перекрывал текст */
+}
+
+/* Обёртка для превью QR */
+.gz-qr-preview {
+  margin: 8px 0 4px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Сам QR (canvas) делаем адаптивным */
+.gz-qr-preview canvas {
+  width: 100%;
+  max-width: 260px;
+  height: auto !important;
+}
+
+/* Ссылка под QR */
+.gz-qr-link {
+  font-size: 13px;
+  color: #6b7280;
+  word-break: break-all;
+  margin: 0 0 4px;
+}
+
+/* Кнопка скачивания — опирается на твой gz-btn-primary,
+   здесь только выравнивание */
+.gz-qr-modal .gz-btn-primary {
+  align-self: flex-end;
+  margin-top: 4px;
+}
+
+/* АДАПТИВ */
+
+/* Планшет / небольшие экраны */
+@media (max-width: 768px) {
+  .gz-qr-modal {
+    width: calc(100% - 24px);
+    padding: 20px 16px 16px;
+    border-radius: 14px;
+    max-height: calc(100vh - 20px);
+  }
+
+  .gz-qr-title {
+    font-size: 16px;
+  }
+
+  .gz-qr-preview {
+    padding: 12px;
+  }
+
+  .gz-qr-preview canvas {
+    max-width: 220px;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+  .gz-qr-modal {
+    width: 100%;
+    margin: 0 8px;
+    border-radius: 12px;
+    padding: 16px 12px 14px;
+  }
+
+  .gz-qr-title {
+    font-size: 15px;
+  }
+
+  .gz-qr-preview canvas {
+    max-width: 200px;
+  }
+
+  .gz-qr-link {
+    font-size: 12px;
+  }
+}
+
 
 .gz-object-modal {
   background: #ffffff;
