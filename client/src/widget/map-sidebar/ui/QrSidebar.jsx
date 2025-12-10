@@ -90,7 +90,6 @@ const QrSidebar = ({
           })}
         </div>
 
-        <button className="gz-show-all">Показати всі об’єкти</button>
 
         {isAdmin && (
           <button

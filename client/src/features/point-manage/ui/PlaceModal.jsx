@@ -1,9 +1,7 @@
-
 import React, { useEffect, useState, useRef } from "react";
 
 import { apiBase } from "../../../shared/config/apiBase";
 import Cross from "../../../shared/ui/Cross";
-
 
 const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
   const [form, setForm] = useState({
@@ -15,7 +13,6 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
     imageUrl: "",
   });
 
-  // 👇 для доступа к file input
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
 
@@ -43,7 +40,6 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  // 👇 helper: чистим ?point из URL
   const clearPointQuery = () => {
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
@@ -51,7 +47,6 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
     window.history.replaceState(null, "", url.toString());
   };
 
-  // 👇 единый обработчик закрытия модалки
   const handleClose = () => {
     clearPointQuery();
     onClose();
@@ -77,14 +72,12 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
     handleClose();
   };
 
-  // 👇 клик по кнопке "Завантажити фото"
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  // 👇 отправка файла на сервер
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -96,7 +89,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
       setUploading(true);
       const res = await fetch(`${apiBase}/upload/image`, {
         method: "POST",
-        body: formData, // без Content-Type, его поставит браузер
+        body: formData,
       });
 
       if (!res.ok) {
@@ -106,7 +99,6 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
       }
 
       const data = await res.json();
-      // Ожидаем, что бек вернёт { url: "/uploads/xxx.webp" }
       if (data.url) {
         setForm((f) => ({ ...f, imageUrl: data.url }));
       }
@@ -115,7 +107,6 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
       alert("Помилка під час завантаження файлу");
     } finally {
       setUploading(false);
-      // сбросим value, чтобы повторно можно было выбрать тот же файл
       e.target.value = "";
     }
   };
@@ -123,10 +114,8 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
   return (
     <div className="gz-modal-backdrop" onClick={handleClose}>
       <div className="gz-object-modal" onClick={(e) => e.stopPropagation()}>
-
         <button className="gz-modal-close" onClick={handleClose}>
           <Cross />
-
         </button>
 
         <div className="gz-object-content">
@@ -139,7 +128,6 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
             {isAdmin && (
               <div style={{ marginTop: "8px" }}>
-                {/* скрытый инпут для выбора файла */}
                 <input
                   type="file"
                   accept="image/*"
@@ -245,6 +233,15 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
             )}
           </div>
         </div>
+
+        {/* Мобильная кнопка "Закрити" (показывается только на мобиле через CSS) */}
+        <button
+          type="button"
+          className="gz-btn-secondary gz-modal-close-mobile"
+          onClick={handleClose}
+        >
+          Закрити
+        </button>
       </div>
     </div>
   );
