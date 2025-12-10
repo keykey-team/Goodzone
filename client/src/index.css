@@ -112,6 +112,13 @@ img {
   aspect-ratio: 197/83;
 }
 
+@media (max-width: 768px) {
+  .gz-side-header img {
+    height: 79px;
+
+  }
+}
+
 .gz-logo-circle {
   width: 50px;
   height: 50px;
@@ -317,6 +324,7 @@ img {
 }
 
 
+
 .gz-show-all {
   all: unset;
   display: flex;
@@ -491,12 +499,20 @@ img {
   line-height: 1;
 }
 
+@media (max-width: 768px) {
+  .gz-modal-close {
+    top: 8px !important;
+    right: 8px !important;
+  }
+}
+
 /* Заголовок */
 .gz-qr-title {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  padding-right: 32px; /* чтобы крестик не перекрывал текст */
+  padding-right: 32px;
+  /* чтобы крестик не перекрывал текст */
 }
 
 /* Обёртка для превью QR */
@@ -599,21 +615,75 @@ img {
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .gz-object-modal {
+    transform: none;
+  }
+
+  .gz-object-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gz-object-image {
+    width: 100% !important;
+    height: auto;
+  }
+
+  .gz-object-image img {
+    width: 100% !important;
+    height: auto;
+  }
+}
+
 .gz-object-content {
   display: flex;
   gap: 16px;
 }
 
-.gz-object-image img {
+.gz-object-image {
+  width: 259px;
+  height: 207px;
+}
+
+.gz-modal-close-mobile {
+  display: none;
   width: 100%;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .gz-modal-close-mobile {
+    display: block;
+    all: unset;
+    border-radius: 10px;
+    background: #B0CB1F;
+    color: #FFF;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    padding: 8px 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .gz-object-line {}
+}
+
+
+.gz-object-image img {
+  width: 259px;
   height: 100%;
   border-radius: 18px;
   object-fit: cover;
+  flex-shrink: 0;
+  aspect-ratio: 259 / 207;
 }
 
 .gz-object-image--empty {
-  width: 100%;
-  height: 190px;
+  width: 259px;
+  height: 207px;
   border-radius: 18px;
   background: #e5e7eb;
   display: flex;
@@ -630,6 +700,12 @@ img {
   font-weight: 500;
   line-height: normal;
   text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .gz-object-label {
+    font-size: 10px;
+  }
 }
 
 .gz-object-name {
@@ -698,12 +774,14 @@ img {
   line-height: normal;
 }
 
-.gz-object-line {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
-  color: #111827;
+@media (max-width: 768px) {
+  .gz-object-line {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #111827;
+  }
 }
 
 .gz-object-line strong {
