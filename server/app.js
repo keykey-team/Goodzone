@@ -6,6 +6,9 @@ import path from "path";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import pointRoutes from "./routes/point.routes.js";
 import routeRoutes from "./routes/route.routes.js";
+import authRoutes from "./routes/authRoutes.js";
+
+import { requireAdmin } from "./middleware/requireAdmin.js";
 
 const app = express();
 
@@ -18,5 +21,6 @@ app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")
 app.use("/api/points", pointRoutes);
 app.use("/api/routes", routeRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/auth", authRoutes);
 
 export default app;
