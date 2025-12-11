@@ -56,7 +56,7 @@ router.post("/image", upload.single("image"), async (req, res) => {
 
     // Если уже webp – просто возвращаем как есть, без конвертации
     if (ext === ".webp") {
-      const fileUrl = `http://192.168.1.126:4000/uploads/${originalFilename}`;
+      const fileUrl = `http://192.168.31.182:4000/uploads/${originalFilename}`;
       return res.json({
         url: fileUrl,
         originalName: req.file.originalname,

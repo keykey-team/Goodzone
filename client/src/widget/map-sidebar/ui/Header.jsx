@@ -4,7 +4,7 @@ const Header = ({logoImg, isAdmin}) => {
       <img src={logoImg} alt="logo" />
       <div>
         <div className="gz-logo-sub">
-          {isAdmin ? "Адмін панель" : "Навігація по комплексу"}
+          {isAdmin ? "Адмін панель" : ""}
         </div>
       </div>
     </div>

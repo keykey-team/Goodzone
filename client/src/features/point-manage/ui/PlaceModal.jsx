@@ -113,7 +113,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
   return (
     <div className="gz-modal-backdrop" onClick={handleClose}>
-      <div className="gz-object-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="gz-object-modal"  style={{ transform: "none" }} onClick={(e) => e.stopPropagation()}>
         <button className="gz-modal-close" onClick={handleClose}>
           <Cross />
         </button>
