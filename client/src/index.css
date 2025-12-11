@@ -25,7 +25,7 @@ body,
 /* ===== КАРТА ===== */
 
 .gz-map-card {
-  height: 100vh;
+  height: 95vh;
   flex: 1;
   background: #ffffff;
   border-radius: 32px;
@@ -208,7 +208,7 @@ img {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 15px;
+  font-size: 16px;
   background: transparent;
   font-weight: 500;
 }
@@ -453,15 +453,13 @@ img {
   justify-content: center;
   color: #14532d;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .marker-number--active .marker-number__circle {
   box-shadow: 0 0 0 4px rgba(164, 223, 68, 0.55);
 }
 
-/* Бэкдроп у тебя, скорее всего, уже есть (.gz-modal-backdrop),
-   но на всякий случай можно убедиться, что он над картой */
 .gz-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -470,6 +468,25 @@ img {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+}
+
+.gz-login-modal {
+  display: flex;
+  flex-direction: column;
+  width: 400px !important;
+  gap: 20px;
+}
+
+.gz-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gz-login-title {
+  all: unset;
+  font-size: 26px;
+  text-align: center;
 }
 
 /* Контейнер модалки с QR */
@@ -582,7 +599,7 @@ img {
   }
 
   .gz-qr-title {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .gz-qr-preview canvas {
@@ -693,6 +710,41 @@ img {
   color: #6b7280;
 }
 
+.gz-error-text {
+  font-size: 12px;
+  color: red;
+}
+
+.gz-upload-btn {
+  width: 100%;
+  padding: 12px 20px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border-radius: 10px;
+  border: 2px solid #E4E8E5;
+  background: #FFFFFF;
+
+  color: #2F6C4F;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.gz-upload-btn:hover {
+  background: #F6F6F6;
+}
+
+.gz-upload-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+
 .gz-object-label {
   color: #7A8B80;
   font-size: 12px;
@@ -710,7 +762,7 @@ img {
 
 .gz-object-name {
   color: #2F6C4F;
-  font-size: 15px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: normal;
@@ -735,7 +787,7 @@ img {
   padding: 7px 10px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .gz-object-actions {
@@ -747,7 +799,7 @@ img {
 .gz-btn-primary,
 .gz-btn-danger {
   flex: 1;
-  border-radius: 999px;
+  border-radius: 10px;
   border: none;
   padding: 9px 12px;
   font-size: 13px;
@@ -756,7 +808,7 @@ img {
 }
 
 .gz-btn-primary {
-  background: #8fd437;
+  background: #B0CB1F;
   color: #ffffff;
 }
 
@@ -823,7 +875,7 @@ img {
 /* инпуты/кнопки переиспользуем */
 
 .gz-btn-primary {
-  background: #8fd437;
+  background: #B0CB1F;
   color: #fff;
 }
 
@@ -864,6 +916,7 @@ img {
 
   .gz-sidebar {
     width: 100%;
+    padding-bottom: 200px;
   }
 
   .gz-object-content {

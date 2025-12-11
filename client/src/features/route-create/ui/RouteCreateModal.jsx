@@ -6,25 +6,42 @@ const RouteCreateModal = ({ open, points, onClose, onSave }) => {
   const [startPointId, setStartPointId] = useState("");
   const [endPointId, setEndPointId] = useState("");
 
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     if (!open) {
       setName("");
       setStartPointId("");
       setEndPointId("");
+      setErrors({});
     }
   }, [open]);
 
   if (!open) return null;
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!name.trim()) newErrors.name = "Вкажіть назву маршруту";
+    if (!startPointId) newErrors.start = "Оберіть початкову точку";
+    if (!endPointId) newErrors.end = "Оберіть кінцеву точку";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !startPointId || !endPointId) return;
+
+    if (!validate()) return;
+
     onSave({
       name,
       fromPointId: startPointId,
       toPointId: endPointId,
     });
 
+    alert("Маршрут успішно створений!");
     onClose();
   };
 
@@ -34,21 +51,27 @@ const RouteCreateModal = ({ open, points, onClose, onSave }) => {
         <button className="gz-modal-close" onClick={onClose}>
           <Cross />
         </button>
+
         <h3 className="gz-route-modal-title">Новий маршрут</h3>
+
         <form onSubmit={handleSubmit}>
           <label className="gz-label">
             Назва маршруту
             <input
-              className="gz-input"
+              className={`gz-input ${errors.name ? "gz-input-error" : ""}`}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Наприклад, від котеджів до пляжу"
             />
+            {errors.name && (
+              <div className="gz-error-text">{errors.name}</div>
+            )}
           </label>
+
           <label className="gz-label">
             Звідки
             <select
-              className="gz-input"
+              className={`gz-input ${errors.start ? "gz-input-error" : ""}`}
               value={startPointId}
               onChange={(e) => setStartPointId(e.target.value)}
             >
@@ -59,11 +82,15 @@ const RouteCreateModal = ({ open, points, onClose, onSave }) => {
                 </option>
               ))}
             </select>
+            {errors.start && (
+              <div className="gz-error-text">{errors.start}</div>
+            )}
           </label>
+
           <label className="gz-label">
             Куди
             <select
-              className="gz-input"
+              className={`gz-input ${errors.end ? "gz-input-error" : ""}`}
               value={endPointId}
               onChange={(e) => setEndPointId(e.target.value)}
             >
@@ -74,6 +101,9 @@ const RouteCreateModal = ({ open, points, onClose, onSave }) => {
                 </option>
               ))}
             </select>
+            {errors.end && (
+              <div className="gz-error-text">{errors.end}</div>
+            )}
           </label>
 
           <button
