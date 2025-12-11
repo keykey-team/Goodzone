@@ -21,6 +21,7 @@ const QrSidebar = ({
   onOpenQr,
 }) => {
   const [search, setSearch] = useState("");
+  const [error, setError] = useState(""); // ⬅️ ERROR STATE
 
   const baseUrl =
     typeof window !== "undefined" ? window.location.origin : "";
@@ -30,17 +31,27 @@ const QrSidebar = ({
     if (!q) return points;
     return points.filter(
       (p) =>
-        String(p.number).includes(q) || (p.name || "").toLowerCase().includes(q)
+        String(p.number).includes(q) ||
+        (p.name || "").toLowerCase().includes(q)
     );
   }, [search, points]);
 
   const handleBuildClick = () => {
+    // ❗ Проверяем выбор объектов
+    if (!routeFromId || !routeToId) {
+      setError("Будь ласка, виберіть обидва об’єкти для маршруту.");
+      return;
+    }
+
+    // Если ок — убираем ошибку и строим маршрут
+    setError("");
     onBuildRoute(routeFromId, routeToId);
   };
 
   return (
     <aside className="gz-sidebar">
       <Header logoImg={logoImg} isAdmin={isAdmin} />
+
       <section className="gz-side-section">
         <h3 className="gz-side-title">Об’єкти комплексу</h3>
 
@@ -90,7 +101,6 @@ const QrSidebar = ({
           })}
         </div>
 
-
         {isAdmin && (
           <button
             type="button"
@@ -116,20 +126,33 @@ const QrSidebar = ({
           <ObjectSelect
             label="Звідки ви йдете"
             value={routeFromId}
-            onChange={onChangeRouteFrom}
+            onChange={(val) => {
+              setError(""); // очищаем ошибку
+              onChangeRouteFrom(val);
+            }}
             points={points}
           />
 
           <ObjectSelect
             label="Куди потрібно потрапити"
             value={routeToId}
-            onChange={onChangeRouteTo}
+            onChange={(val) => {
+              setError(""); // очищаем ошибку
+              onChangeRouteTo(val);
+            }}
             points={points}
           />
 
           <button className="gz-route-btn" onClick={handleBuildClick}>
             ПРОКЛАСТИ МАРШРУТ
           </button>
+
+          {/* ❗ БЛОК С ОШИБКОЙ */}
+          {error && (
+            <p style={{ color: "red", marginTop: 10, fontSize: 14 }}>
+              {error}
+            </p>
+          )}
         </section>
       )}
     </aside>

@@ -127,7 +127,10 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
             )}
 
             {isAdmin && (
-              <div style={{ marginTop: "8px" }}>
+              <div
+                className="uploading-img-wrapper"
+                style={{ marginTop: "8px" }}
+              >
                 <input
                   type="file"
                   accept="image/*"
@@ -135,12 +138,25 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
                   style={{ display: "none" }}
                   onChange={handleFileChange}
                 />
+
                 <button
                   type="button"
-                  className="gz-btn-secondary"
+                  className="gz-upload-btn"
                   onClick={handleUploadClick}
                   disabled={uploading}
                 >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="18"
+                    viewBox="0 0 16 18"
+                    fill="none"
+                  >
+                    <path
+                      d="M14.1311 9.5188L8.47863 15.1128C6.92877 16.6466 4.46724 16.6466 3.00855 15.1128C1.45869 13.5789 1.45869 11.1429 3.00855 9.69925L10.302 2.4812C11.2137 1.66917 12.5812 1.66917 13.4929 2.4812C14.4046 3.38346 14.4046 4.82707 13.4929 5.6391L7.20228 11.8647C6.92878 12.1353 6.47293 12.1353 6.19943 11.8647C5.92593 11.594 5.92593 11.1429 6.19943 10.8722L10.849 6.27068C11.2137 5.90978 11.2137 5.36842 10.849 5.00752C10.4843 4.64662 9.93732 4.64662 9.57265 5.00752L4.92308 9.69925C3.92023 10.6917 3.92023 12.2256 4.92308 13.218C5.92593 14.1203 7.47578 14.1203 8.47863 13.218L14.7692 6.99248C16.4103 5.36842 16.4103 2.84211 14.7692 1.21805C13.1282 -0.406015 10.5755 -0.406015 8.93447 1.21805L1.64103 8.43609C0.547009 9.5188 0 10.9624 0 12.406C0 15.5639 2.55271 18 5.74359 18C7.29345 18 8.66097 17.3684 9.75499 16.3759L15.4074 10.782C15.7721 10.4211 15.7721 9.8797 15.4074 9.5188C15.0427 9.1579 14.4957 9.1579 14.1311 9.5188Z"
+                      fill="#2F6C4F"
+                    />
+                  </svg>
                   {uploading ? "Завантаження..." : "Завантажити фото"}
                 </button>
               </div>
@@ -221,12 +237,12 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
                 <p className="gz-object-desc">{form.description}</p>
 
                 <p className="gz-object-line">
-                  <strong>ЧАС РОБОТИ</strong>
+                  <strong>ЧАС РОБОТИ: </strong>
                   <span>{form.workingHours}</span>
                 </p>
 
                 <p className="gz-object-line">
-                  <strong>РОЗТАШУВАННЯ</strong>
+                  <strong>РОЗТАШУВАННЯ: </strong>
                   <span>{form.locationText}</span>
                 </p>
               </>

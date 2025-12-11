@@ -7,14 +7,13 @@ import { QRCodeCanvas } from "qrcode.react";
 
 import PointMarker from "../../../entities/point/ui/PointMarker";
 import ActiveRoutePolyline from "../../../features/map-build-route/ui/ActiveRoutePoline";
-
-import AutoFitBounds from "../../../shared/ui/AutoFitBounds";
+// import AutoFitBounds from "../../../shared/ui/AutoFitBounds"; // не используем
 import PlaceModal from "../../../features/point-manage/ui/PlaceModal";
 import QrSidebar from "../../map-sidebar/ui/QrSidebar";
 import RouteCreateModal from "../../../features/route-create/ui/RouteCreateModal";
 import RouteChoiceModal from "../../../features/map-route-choice/ui/RouteChoiceModal";
 import RouteEditModal from "../../../features/route-edit/ui/RouteEditModal";
-import MapImage from "../../../assets/IMG_4378.JPG";
+import MapImage from "../../../assets/goodzoneMap8.webp";
 import { bounds } from "../config/mapConfig";
 import AddPointController from "../../../features/map-add-point/ui/AddPointController";
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
@@ -27,6 +26,9 @@ const MapWithImage = ({ mode = "user" }) => {
   const [qrPoint, setQrPoint] = useState(null);
   const qrCanvasRef = useRef(null);
 
+  // 👉 для undo последнего перетаскивания точки
+  const [lastMove, setLastMove] = useState(null);
+
   // реф на карточку с картой — для scrollIntoView
   const mapCardRef = useRef(null);
   // реф на экземпляр Leaflet-карты — для fitBounds
@@ -35,6 +37,20 @@ const MapWithImage = ({ mode = "user" }) => {
   // Базовый URL сайта (для ссылок в QR)
   const baseUrl =
     typeof window !== "undefined" ? window.location.origin : "";
+
+  // 📍 Границы картинки
+  const imgBounds = L.latLngBounds(bounds);
+  const bottomLeft = imgBounds.getSouthWest();
+  const bottomRight = imgBounds.getSouthEast();
+
+  // 📍 Центр по умолчанию — снизу слева (SSR/десктоп)
+  let initialCenter = bottomLeft;
+
+  // На телефоне (< 768px) — снизу по центру
+  if (typeof window !== "undefined" && window.innerWidth < 768) {
+    const centerLng = (bottomLeft.lng + bottomRight.lng) / 2;
+    initialCenter = L.latLng(bottomLeft.lat, centerLng);
+  }
 
   // 👉 Автооткрытие модалки точки по ?point=ID
   useEffect(() => {
@@ -79,6 +95,41 @@ const MapWithImage = ({ mode = "user" }) => {
     }
   }, [model.activeRouteCoords]);
 
+  // 👉 обёртка над перемещением точки — сохраняем предыдущие координаты
+  const handleMovePointWithHistory = async (point, coords) => {
+    // запомним, откуда её перетащили
+    setLastMove({
+      pointId: point.id,
+      prevCoords: point.coords,
+    });
+
+    await model.handleMovePoint(point, coords);
+  };
+
+  // 👉 Ctrl+Z / Cmd+Z — откат последнего перетаскивания точки
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isUndoKey =
+        (e.key === "z" || e.key === "Z") && (e.ctrlKey || e.metaKey);
+
+      if (!isUndoKey) return;
+      if (!lastMove) return;
+
+      const { pointId, prevCoords } = lastMove;
+      const point = model.sortedPoints.find((p) => p.id === pointId);
+      if (!point) return;
+
+      // вызываем оригинальный метод, чтобы синхронизировать с беком
+      model.handleMovePoint(point, prevCoords);
+
+      // один уровень undo — очистим историю
+      setLastMove(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lastMove, model, model.sortedPoints]);
+
   const handleDownloadQr = () => {
     const canvas = qrCanvasRef.current;
     if (!canvas) return;
@@ -101,7 +152,10 @@ const MapWithImage = ({ mode = "user" }) => {
             mapRef.current = mapInstance;
           }}
           crs={L.CRS.Simple}
-          bounds={bounds}
+          // ❗ Не даём bounds, чтобы не фитилось по центру
+          // bounds={bounds}
+          center={initialCenter} // 👈 разный центр для мобилы/десктопа
+          zoom={-3}
           style={{ width: "100%", height: "100%" }}
           className={
             model.addPointMode ? "leaflet-map add-point-mode" : "leaflet-map"
@@ -110,10 +164,10 @@ const MapWithImage = ({ mode = "user" }) => {
           maxBoundsViscosity={1.0}
           minZoom={-3}
           maxZoom={4}
-          zoom={-3}
         >
           <ImageOverlay url={MapImage} bounds={bounds} />
-          <AutoFitBounds bounds={bounds} />
+
+          {/* <AutoFitBounds bounds={bounds} />  // не используем */}
 
           <AddPointController
             enabled={model.isAdmin && model.addPointMode}
@@ -143,7 +197,7 @@ const MapWithImage = ({ mode = "user" }) => {
               isActive={model.selectedPoint?.id === p.id}
               isDraggable={model.isAdmin}
               onSelect={model.handleSelectPoint}
-              onMove={model.handleMovePoint}
+              onMove={handleMovePointWithHistory}
             />
           ))}
 
@@ -187,7 +241,6 @@ const MapWithImage = ({ mode = "user" }) => {
         onBuildRoute={handleBuildRouteAndScroll}
         addPointMode={model.addPointMode}
         onToggleAddPointMode={model.toggleAddPointMode}
-        // 👇 новый проп: открыть модалку с большим QR
         onOpenQr={setQrPoint}
       />
 

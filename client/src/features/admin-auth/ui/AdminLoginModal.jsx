@@ -14,13 +14,39 @@ const AdminLoginModal = ({ open, onSuccess }) => {
     e.preventDefault();
     setError("");
 
+    // 👉 базові перевірки
+    if (!login.trim() || !password.trim()) {
+      setError("Будь ласка, заповніть усі поля.");
+      return;
+    }
+
     try {
       setSubmitting(true);
+
       const token = await loginAdmin(login, password);
+      if (!token) {
+        setError("Невідома помилка. Спробуйте ще раз.");
+        return;
+      }
+
       setAdminToken(token);
       onSuccess?.();
     } catch (err) {
-      setError(err.message || "Помилка входу");
+      console.error(err);
+
+      let msg = "Сталася помилка. Спробуйте пізніше.";
+
+      if (err?.response?.status === 401) {
+        msg = "Невірний логін або пароль.";
+      } else if (err?.response?.status === 404) {
+        msg = "Користувача не знайдено.";
+      } else if (err?.message?.includes("Failed to fetch")) {
+        msg = "Сервер не відповідає. Перевірте підключення.";
+      } else if (err?.message) {
+        msg = err.message;
+      }
+
+      setError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -30,10 +56,10 @@ const AdminLoginModal = ({ open, onSuccess }) => {
     <div className="gz-modal-backdrop">
       <div
         className="gz-object-modal gz-login-modal"
-        style={{transform:"none"}}
+        style={{ transform: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="gz-login-title">Вхід в адмін-панель</h2>
+        <h2 className="gz-login-title">Вхід</h2>
 
         <form onSubmit={handleSubmit} className="gz-login-form">
           <label className="gz-label">
@@ -55,9 +81,8 @@ const AdminLoginModal = ({ open, onSuccess }) => {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
             />
+            {error && <div className="gz-error-text">{error}</div>}
           </label>
-
-          {error && <div className="gz-error-text">{error}</div>}
 
           <div className="gz-object-actions">
             <button
