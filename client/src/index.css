@@ -82,7 +82,7 @@ body,
 }
 
 .gz-tool-btn.active {
-  background: #8fd437;
+  background: #B0CB1F;
   color: #ffffff;
 }
 
@@ -159,10 +159,17 @@ img {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
 }
 
+@media (max-width: 768px) {
+  .gz-side-section {
+    padding-right: 28px;
+    padding-left: 28px;
+  }
+}
+
 .gz-side-title {
   color: #2F6C4F;
   text-align: center;
-  font-size: 20px;
+  font-size: 18px;
   margin: 0;
   font-style: normal;
   font-weight: 500;
@@ -179,6 +186,17 @@ img {
   border-radius: 100px;
   width: 27px;
   height: 27px;
+}
+
+@media (max-width: 768px) {
+  .gz-search-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .icon__wrapper {
+    font-size: 10px;
+  }
 }
 
 .gz-custom-select__search {
@@ -213,12 +231,51 @@ img {
   font-weight: 500;
 }
 
+.gz-search-input::placeholder {
+  font-size: 12px;
+}
+
 .gz-objects-list {
   max-height: 381px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: #2F6C4F #e5e7eb;
+  overflow-y: scroll;
+}
+
+.gz-objects-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gz-objects-list::-webkit-scrollbar-track {
+  background: #e5e7eb;
+  /* светлый фон дорожки */
+  border-radius: 6px;
+}
+
+.gz-objects-list::-webkit-scrollbar-thumb {
+  background: #2F6C4F;
+  /* твой зелёный */
+  border-radius: 6px;
+}
+
+.gz-objects-list::-webkit-scrollbar-thumb:hover {
+  background: #24573f;
+  /* слегка темнее при ховере */
+}
+
+.gz-search .icon__wrapper {
+  background-color: #B0CB1F;
+}
+
+@media (max-width: 768px) {
+  .gz-objects-list {
+    max-height: 153px;
+  }
 }
 
 .gz-object-item {
@@ -232,9 +289,25 @@ img {
   gap: 8px;
 }
 
+@media (max-width: 768px) {
+  .gz-object-item {
+    padding: 0px 12px;
+  }
+}
+
 .gz-search {
   border: 2px solid #B0CB1F !important;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fff;
 
+}
+
+.objectSelect__wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .gz-object-item--active {
@@ -319,6 +392,12 @@ img {
   gap: 8px;
 }
 
+@media (max-width: 768px) {
+  .gz-custom-select__option {
+    padding: 2px 12px;
+  }
+}
+
 .gz-custom-select__option:hover {
   background: rgba(176, 203, 31, 0.15);
 }
@@ -348,10 +427,33 @@ img {
   width: 100%;
 }
 
+.search-icon-point {
+  background-color: #B0CB1F;
+}
+
+.gz-select-input {
+  all: unset;
+  width: 90%;
+}
+
 /* "строка" селекта — уже есть у тебя, просто дополним */
 .gz-object-item-select {
   justify-content: space-between;
   /* текст слева, стрелка справа */
+}
+
+.wrapper-icon-search {
+  display: flex;
+  height: max-content;
+  width: max-content;
+}
+
+.wrapper-icon-search .icon__wrapper {
+  background-color: #B0CB1F;
+}
+
+.search-in-select .icon__wrapper {
+  background-color: #B0CB1F;
 }
 
 /* стрелка (используем твой SVG) */
@@ -364,6 +466,14 @@ img {
   background-repeat: no-repeat;
   background-size: 15px 9px;
   transition: transform 0.25s ease;
+}
+
+@media (max-width: 768px) {
+  .gz-custom-select__arrow {
+    width: 12px;
+    height: 7px;
+    background-size: 12px 7px;
+  }
 }
 
 /* поворот стрелки при открытом селекте */
@@ -384,6 +494,12 @@ img {
   border: 2px solid #E4E8E5;
   max-height: 260px;
   overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .gz-custom-select__dropdown {
+    max-height: 153px;
+  }
 }
 
 /* опция в списке (используем уже твою базу .gz-object-item) */
@@ -762,7 +878,7 @@ img {
 
 .gz-object-name {
   color: #2F6C4F;
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: normal;
@@ -901,11 +1017,12 @@ img {
     position: relative;
     width: 100%;
     height: auto;
-    aspect-ratio: 420 / 448 !important;
+    aspect-ratio: 420 / 348 !important;
     overflow: hidden;
     border-radius: 0px 0px 24px 24px;
-    
+
     padding: 14px 14px;
+    padding-top: 0px;
     box-shadow: none;
   }
 

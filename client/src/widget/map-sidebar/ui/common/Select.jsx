@@ -4,28 +4,21 @@ import SearchIcon from "../../../../shared/icons/SearchIcon";
 
 const ObjectSelect = ({ label, value, onChange, points }) => {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const wrapperRef = useRef(null);
 
   const selected = points.find((p) => p.id === value) || null;
 
-  const handleOptionClick = (id) => {
-    onChange(id);
-    setOpen(false);
-  };
+  // когда выбрали точку — подставляем в инпут её текст
+  useEffect(() => {
+    if (selected) {
+      setQuery(`${selected.number} — ${selected.name}`);
+    } else {
+      setQuery("");
+    }
+  }, [selected]);
 
-  // фильтрация по номеру или названию
-  const filteredPoints = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    if (!q) return points;
-    return points.filter(
-      (p) =>
-        String(p.number).includes(q) ||
-        (p.name || "").toLowerCase().includes(q)
-    );
-  }, [points, search]);
-
-  // закрывать по клику мимо
+  // закрытие по клику мимо
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!wrapperRef.current) return;
@@ -37,6 +30,34 @@ const ObjectSelect = ({ label, value, onChange, points }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const filteredPoints = useMemo(() => {
+    const q = query.toLowerCase().trim();
+
+    // если ничего не ввели или оставили ровно текст выбранного – показываем весь список
+    if (
+      !q ||
+      (selected && q === `${selected.number} — ${selected.name}`.toLowerCase())
+    ) {
+      return points;
+    }
+
+    return points.filter((p) => {
+      const label = `${p.number} — ${p.name || ""}`.toLowerCase();
+      return label.includes(q);
+    });
+  }, [query, points, selected]);
+
+  const handleInputChange = (e) => {
+    setQuery(e.target.value);
+    setOpen(true);
+  };
+
+  const handleSelect = (p) => {
+    onChange(p.id);
+    setQuery(`${p.number} — ${p.name}`);
+    setOpen(false);
+  };
 
   return (
     <div className="input__wrapper">
@@ -50,51 +71,49 @@ const ObjectSelect = ({ label, value, onChange, points }) => {
             : "gz-select-wrapper"
         }
       >
-        {/* голова селекта */}
-        <button
-          type="button"
+        {/* “шапка” селекта: иконка + инпут + стрелка */}
+        <div
           className="gz-object-item gz-object-item-select"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen(true)}
         >
-          {selected ? (
-            <>
-              <IconWrapper>{selected.number}</IconWrapper>
-              <span className="gz-object-name">{selected.name}</span>
-            </>
-          ) : (
-            <span className="gz-object-name">Оберіть об’єкт</span>
+          {selected && <IconWrapper>{selected.number}</IconWrapper>}
+          {!selected && (
+            <span className="wrapper-icon-search">
+              <IconWrapper>
+                <SearchIcon />
+              </IconWrapper>
+            </span>
           )}
 
+          <input
+            className="gz-select-input"
+            placeholder="Оберіть об’єкт"
+            value={query}
+            onChange={handleInputChange}
+            onFocus={() => setOpen(true)}
+          />
+
           <span className="gz-custom-select__arrow" />
-        </button>
+        </div>
 
         {/* выпадающий список */}
         {open && (
           <div className="gz-custom-select__dropdown">
-            {/* строка поиска как первая "опция" */}
-            <div className="gz-search gz-object-item gz-custom-select__search">
-              <IconWrapper>
-                <SearchIcon />
-              </IconWrapper>
-              <input
-                className="gz-search-input"
-                placeholder="Пошук за назвою, або номером"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
             {filteredPoints.map((p) => (
               <button
                 key={p.id}
                 type="button"
                 className="gz-object-item gz-custom-select__option"
-                onClick={() => handleOptionClick(p.id)}
+                onClick={() => handleSelect(p)}
               >
                 <IconWrapper>{p.number}</IconWrapper>
                 <span className="gz-object-name">{p.name}</span>
               </button>
             ))}
+
+            {filteredPoints.length === 0 && (
+              <div className="gz-custom-select__empty">Нічого не знайдено</div>
+            )}
           </div>
         )}
       </div>
