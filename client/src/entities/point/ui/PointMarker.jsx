@@ -1,4 +1,3 @@
-// src/entities/point/ui/PointMarker.jsx
 import { Marker } from "react-leaflet";
 import { createNumberIcon } from "../lib/createNumberIcon";
 

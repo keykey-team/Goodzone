@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 
-import { MapContainer, ImageOverlay, FeatureGroup } from "react-leaflet";
+import {
+  MapContainer,
+  ImageOverlay,
+  FeatureGroup,
+  useMap,
+} from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import L from "leaflet";
 import { QRCodeCanvas } from "qrcode.react";
@@ -19,6 +24,28 @@ import AddPointController from "../../../features/map-add-point/ui/AddPointContr
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
 import { useMapWithImageModel } from "../model/useMapWithImageModel";
 
+/**
+ * Внутренний компонент, который сам зумит карту по маршруту
+ */
+const RouteAutoZoom = ({ coords }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!coords || coords.length < 2) return;
+
+    try {
+      const routeBounds = L.latLngBounds(coords);
+      map.fitBounds(routeBounds, {
+        padding: [80, 80],
+      });
+    } catch (e) {
+      console.error("RouteAutoZoom fitBounds error:", e);
+    }
+  }, [coords, map]);
+
+  return null;
+};
+
 const MapWithImage = ({ mode = "user" }) => {
   const model = useMapWithImageModel({ mode });
 
@@ -31,26 +58,29 @@ const MapWithImage = ({ mode = "user" }) => {
 
   // реф на карточку с картой — для scrollIntoView
   const mapCardRef = useRef(null);
-  // реф на экземпляр Leaflet-карты — для fitBounds
-  const mapRef = useRef(null);
 
   // Базовый URL сайта (для ссылок в QR)
-  const baseUrl =
-    typeof window !== "undefined" ? window.location.origin : "";
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   // 📍 Границы картинки
   const imgBounds = L.latLngBounds(bounds);
   const bottomLeft = imgBounds.getSouthWest();
   const bottomRight = imgBounds.getSouthEast();
 
-  // 📍 Центр по умолчанию — снизу слева (SSR/десктоп)
-  let initialCenter = bottomLeft;
+  // 📱 проверяем мобилу
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-  // На телефоне (< 768px) — снизу по центру
-  if (typeof window !== "undefined" && window.innerWidth < 768) {
+  // 📍 Центр — разный для мобилки и десктопа
+  let initialCenter = bottomLeft;
+  if (isMobile) {
     const centerLng = (bottomLeft.lng + bottomRight.lng) / 2;
     initialCenter = L.latLng(bottomLeft.lat, centerLng);
   }
+
+  // 🔍 Стартовый зум — НЕ отдаляем
+  const initialZoom = -3;
+
+  
 
   // 👉 Автооткрытие модалки точки по ?point=ID
   useEffect(() => {
@@ -68,36 +98,26 @@ const MapWithImage = ({ mode = "user" }) => {
     }
   }, [model.sortedPoints, model]);
 
-  // обёртка над построением маршрута: строим + скроллим к карте
+  // обёртка над построением маршрута:
+  // ❗ ТОЛЬКО строим маршрут, зум делает RouteAutoZoom
   const handleBuildRouteAndScroll = (fromId, toId) => {
     model.handleBuildRoute(fromId, toId);
-
-    if (mapCardRef.current) {
-      mapCardRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
   };
 
-  // когда появились coords активного маршрута — приблизиться к ним
+  // когда появился активный маршрут → просто скроллим к карте
   useEffect(() => {
-    if (!mapRef.current) return;
     const coords = model.activeRouteCoords;
-
     if (!coords || coords.length < 2) return;
+    if (!mapCardRef.current) return;
 
-    try {
-      const routeBounds = L.latLngBounds(coords);
-      mapRef.current.fitBounds(routeBounds, { padding: [40, 40] });
-    } catch (e) {
-      console.error("Failed to fit bounds for active route", e);
-    }
+    mapCardRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
   }, [model.activeRouteCoords]);
 
   // 👉 обёртка над перемещением точки — сохраняем предыдущие координаты
   const handleMovePointWithHistory = async (point, coords) => {
-    // запомним, откуда её перетащили
     setLastMove({
       pointId: point.id,
       prevCoords: point.coords,
@@ -119,10 +139,8 @@ const MapWithImage = ({ mode = "user" }) => {
       const point = model.sortedPoints.find((p) => p.id === pointId);
       if (!point) return;
 
-      // вызываем оригинальный метод, чтобы синхронизировать с беком
       model.handleMovePoint(point, prevCoords);
 
-      // один уровень undo — очистим историю
       setLastMove(null);
     };
 
@@ -144,30 +162,28 @@ const MapWithImage = ({ mode = "user" }) => {
 
   const handleCloseQrModal = () => setQrPoint(null);
 
+  const minZoomValue = isMobile ? -4 : -3;
+
   return (
     <div className="gz-layout">
       <div className="gz-map-card" ref={mapCardRef}>
         <MapContainer
-          whenCreated={(mapInstance) => {
-            mapRef.current = mapInstance;
-          }}
           crs={L.CRS.Simple}
-          // ❗ Не даём bounds, чтобы не фитилось по центру
-          // bounds={bounds}
-          center={initialCenter} // 👈 разный центр для мобилы/десктопа
-          zoom={-3}
+          center={initialCenter}
+          zoom={minZoomValue}
           style={{ width: "100%", height: "100%" }}
           className={
             model.addPointMode ? "leaflet-map add-point-mode" : "leaflet-map"
           }
           maxBounds={bounds}
           maxBoundsViscosity={1.0}
-          minZoom={-3}
+          minZoom={minZoomValue}
           maxZoom={4}
         >
           <ImageOverlay url={MapImage} bounds={bounds} />
 
-          {/* <AutoFitBounds bounds={bounds} />  // не используем */}
+          {/* 👇 Авто-зум по активному маршруту */}
+          <RouteAutoZoom coords={model.activeRouteCoords} />
 
           <AddPointController
             enabled={model.isAdmin && model.addPointMode}
