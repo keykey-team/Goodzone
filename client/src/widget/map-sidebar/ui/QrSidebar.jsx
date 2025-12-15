@@ -18,7 +18,7 @@ const QrSidebar = ({
   onBuildRoute,
   addPointMode,
   onToggleAddPointMode,
-  onOpenQr,
+  onOpenQr
 }) => {
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");

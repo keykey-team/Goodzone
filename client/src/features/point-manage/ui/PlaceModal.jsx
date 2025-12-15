@@ -54,7 +54,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
   const handleSave = async () => {
     const body = { ...point, ...form };
-    const res = await fetch(`${apiBase}/points/${point.id}`, {
+    const res = await fetch(`${apiBase}/goodzone/points/${point.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -67,7 +67,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
   const handleDelete = async () => {
     if (!onDelete) return;
     if (!window.confirm("Видалити об’єкт?")) return;
-    await fetch(`${apiBase}/points/${point.id}`, { method: "DELETE" });
+    await fetch(`${apiBase}/goodzone/points/${point.id}`, { method: "DELETE" });
     onDelete(point.id);
     handleClose();
   };
@@ -87,7 +87,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
     try {
       setUploading(true);
-      const res = await fetch(`${apiBase}/upload/image`, {
+      const res = await fetch(`${apiBase}/goodzone/upload/image`, {
         method: "POST",
         body: formData,
       });

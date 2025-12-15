@@ -1,7 +1,7 @@
-const apiBase = "http://localhost:4000/api";
+const apiBase = "http://185.237.204.185/api";
 
 export const loginAdmin = async (login, password) => {
-  const res = await fetch(`${apiBase}/auth/login`, {
+  const res = await fetch(`${apiBase}/goodzone/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ login, password }),

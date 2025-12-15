@@ -2,7 +2,7 @@
 import { Route } from "../models/route.model.js";
 
 /**
- * GET /api/routes
+ * GET /api/goodzone/routes
  * Все маршруты
  */
 export async function getRoutes(req, res) {
@@ -21,7 +21,7 @@ export async function getRoutes(req, res) {
 }
 
 /**
- * POST /api/routes
+ * POST /api/goodzone/routes
  * Создать маршрут между двумя точками
  */
 export async function createRoute(req, res) {
@@ -56,7 +56,7 @@ export async function createRoute(req, res) {
 }
 
 /**
- * PUT /api/routes/:id
+ * PUT /api/goodzone/routes/:id
  * Обновить маршрут
  */
 export async function updateRoute(req, res) {
@@ -89,7 +89,7 @@ export async function updateRoute(req, res) {
 }
 
 /**
- * DELETE /api/routes/:id
+ * DELETE /api/goodzone/routes/:id
  */
 export async function deleteRoute(req, res) {
   try {
@@ -108,7 +108,7 @@ export async function deleteRoute(req, res) {
 }
 
 /**
- * GET /api/routes/path?fromId=...&toId=...
+ * GET /api/goodzone/routes/path?fromId=...&toId=...
  * Построение комбинированного маршрута по графу
  */
 export async function getRoutePath(req, res) {

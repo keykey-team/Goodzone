@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Cross from "../../../shared/ui/Cross";
 
-const apiBase = "http://localhost:4000/api";
+const apiBase = "http://185.237.204.185/api";
 
 const RouteEditModal = ({
   open,
@@ -37,7 +37,7 @@ const RouteEditModal = ({
 
   const handleSave = async () => {
     try {
-      const res = await fetch(`${apiBase}/routes/${route.id}`, {
+      const res = await fetch(`${apiBase}/goodzone/routes/${route.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -59,7 +59,7 @@ const RouteEditModal = ({
   const handleDelete = async () => {
     if (!window.confirm("Видалити маршрут?")) return;
     try {
-      const res = await fetch(`${apiBase}/routes/${route.id}`, {
+      const res = await fetch(`${apiBase}/goodzone/routes/${route.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

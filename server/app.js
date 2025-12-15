@@ -18,9 +18,9 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 
 // Роуты
-app.use("/api/points", pointRoutes);
-app.use("/api/routes", routeRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api/goodzone/points", pointRoutes);
+app.use("/api/goodzone/routes", routeRoutes);
+app.use("/api/goodzone/upload", uploadRoutes);
+app.use("/api/goodzone/auth", authRoutes);
 
 export default app;
