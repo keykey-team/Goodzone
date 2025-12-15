@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 
 import { apiBase } from "../../../shared/config/apiBase";
 import Cross from "../../../shared/ui/Cross";
+import GoodZoneImg from "../../../assets/goodzone.png";
 
 const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
   const [form, setForm] = useState({
@@ -27,8 +28,8 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
         locationText: point.locationText || "Центральна частина комплексу",
         type: point.type || "",
         imageUrl:
-          point.imageUrl ||
-          "https://placehold.co/600x400/eee/ccc?text=Фото+тимчасово+відсутнє",
+          // point.imageUrl ||
+          GoodZoneImg
       });
     }
   }, [point]);
