@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 import {
   MapContainer,
@@ -24,48 +24,83 @@ import AddPointController from "../../../features/map-add-point/ui/AddPointContr
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
 import { useMapWithImageModel } from "../model/useMapWithImageModel";
 
+
 /**
- * Внутренний компонент, который сам зумит карту по маршруту
+ * Отслеживаем, взаимодействует ли пользователь с картой (drag/zoom/pinch),
+ * чтобы не конфликтовать программным pan/fitBounds.
  */
-const RouteAutoZoom = ({ coords }) => {
+const UseUserInteractingFlag = () => {
   const map = useMap();
+  const ref = useRef(false);
+
+  useEffect(() => {
+    const onStart = () => (ref.current = true);
+    const onEnd = () => (ref.current = false);
+
+    map.on("movestart zoomstart dragstart", onStart);
+    map.on("moveend zoomend dragend", onEnd);
+
+    return () => {
+      map.off("movestart zoomstart dragstart", onStart);
+      map.off("moveend zoomend dragend", onEnd);
+    };
+  }, [map]);
+
+  return ref;
+};
+
+/**
+ * Авто-зум по маршруту (с дебаунсом + без конфликтов с жестами)
+ */
+const RouteAutoZoom = ({ coords, isMobile }) => {
+  const map = useMap();
+  const interactingRef = UseUserInteractingFlag();
 
   useEffect(() => {
     if (!coords || coords.length < 2) return;
 
-    try {
-      const routeBounds = L.latLngBounds(coords);
-      map.fitBounds(routeBounds, {
-        padding: [80, 80],
-      });
-    } catch (e) {
-      console.error("RouteAutoZoom fitBounds error:", e);
-    }
-  }, [coords, map]);
+    // дебаунсим, чтобы не фитить bounds "по шагам"
+    const t = setTimeout(() => {
+      if (interactingRef.current) return;
+
+      try {
+        const routeBounds = L.latLngBounds(coords);
+        map.fitBounds(routeBounds, {
+          padding: isMobile ? [40, 40] : [80, 80],
+          animate: !isMobile,
+        });
+      } catch (e) {
+        console.error("RouteAutoZoom fitBounds error:", e);
+      }
+    }, 200);
+
+    return () => clearTimeout(t);
+  }, [coords, map, isMobile, interactingRef]);
 
   return null;
 };
 
-const PointAutoZoom = ({ point, zoom = 1 }) => {
+/**
+ * Авто-центровка на выбранную точку (без конфликтов с жестами)
+ */
+const PointAutoZoom = ({ point, zoom = 1, isMobile }) => {
   const map = useMap();
+  const interactingRef = UseUserInteractingFlag();
 
   useEffect(() => {
     if (!point?.coords) return;
+    if (interactingRef.current) return;
 
-    // coords у тебя уже используются как latlng (Leaflet CRS.Simple)
     const latlng = L.latLng(point.coords);
 
-    // можно flyTo для красивой анимации, или setView без анимации
-    map.panTo(latlng, {
-      animate: true,
-      duration: 0.6, // очень мягко
-      easeLinearity: 0.5,
+    // setView легче, чем panTo + animate
+    map.setView(latlng, zoom ?? map.getZoom(), {
+      animate: !isMobile,
     });
-  }, [point?.id, map, zoom]);
+  }, [point?.id, map, zoom, isMobile, interactingRef]);
 
   return null;
 };
-
 
 const MapWithImage = ({ mode = "user" }) => {
   const model = useMapWithImageModel({ mode });
@@ -83,25 +118,22 @@ const MapWithImage = ({ mode = "user" }) => {
   // Базовый URL сайта (для ссылок в QR)
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
 
-  // 📍 Границы картинки
-  const imgBounds = L.latLngBounds(bounds);
-  const bottomLeft = imgBounds.getSouthWest();
-  const bottomRight = imgBounds.getSouthEast();
-
   // 📱 проверяем мобилу
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-  // 📍 Центр — разный для мобилки и десктопа
-  let initialCenter = bottomLeft;
-  if (isMobile) {
+  // 📍 Границы картинки (мемо, чтобы не пересоздавать)
+  const imgBounds = useMemo(() => L.latLngBounds(bounds), []);
+  const bottomLeft = imgBounds.getSouthWest();
+  const bottomRight = imgBounds.getSouthEast();
+
+  // 📍 Центр — разный для мобилки и десктопа (мемо)
+  const initialCenter = useMemo(() => {
+    if (!isMobile) return bottomLeft;
     const centerLng = (bottomLeft.lng + bottomRight.lng) / 2;
-    initialCenter = L.latLng(bottomLeft.lat, centerLng);
-  }
+    return L.latLng(bottomLeft.lat, centerLng);
+  }, [isMobile, bottomLeft, bottomRight]);
 
-  // 🔍 Стартовый зум — НЕ отдаляем
-  const initialZoom = -3;
-
-
+  const minZoomValue = isMobile ? -4 : -3;
 
   // 👉 Автооткрытие модалки точки по ?point=ID
   useEffect(() => {
@@ -119,11 +151,30 @@ const MapWithImage = ({ mode = "user" }) => {
     }
   }, [model.sortedPoints, model]);
 
-  // обёртка над построением маршрута:
-  // ❗ ТОЛЬКО строим маршрут, зум делает RouteAutoZoom
-  const handleBuildRouteAndScroll = (fromId, toId) => {
-    model.handleBuildRoute(fromId, toId);
-  };
+  // стабилизируем колбэки (важно для React.memo PointMarker)
+  const onSelectPoint = useCallback(
+    (p) => model.handleSelectPoint(p),
+    [model]
+  );
+
+  const handleMovePointWithHistory = useCallback(
+    async (point, coords) => {
+      setLastMove({
+        pointId: point.id,
+        prevCoords: point.coords,
+      });
+
+      await model.handleMovePoint(point, coords);
+    },
+    [model]
+  );
+
+  const handleBuildRouteAndScroll = useCallback(
+    (fromId, toId) => {
+      model.handleBuildRoute(fromId, toId);
+    },
+    [model]
+  );
 
   // когда появился активный маршрут → просто скроллим к карте
   useEffect(() => {
@@ -136,16 +187,6 @@ const MapWithImage = ({ mode = "user" }) => {
       block: "center",
     });
   }, [model.activeRouteCoords]);
-
-  // 👉 обёртка над перемещением точки — сохраняем предыдущие координаты
-  const handleMovePointWithHistory = async (point, coords) => {
-    setLastMove({
-      pointId: point.id,
-      prevCoords: point.coords,
-    });
-
-    await model.handleMovePoint(point, coords);
-  };
 
   // 👉 Ctrl+Z / Cmd+Z — откат последнего перетаскивания точки
   useEffect(() => {
@@ -161,7 +202,6 @@ const MapWithImage = ({ mode = "user" }) => {
       if (!point) return;
 
       model.handleMovePoint(point, prevCoords);
-
       setLastMove(null);
     };
 
@@ -169,7 +209,7 @@ const MapWithImage = ({ mode = "user" }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lastMove, model, model.sortedPoints]);
 
-  const handleDownloadQr = () => {
+  const handleDownloadQr = useCallback(() => {
     const canvas = qrCanvasRef.current;
     if (!canvas) return;
 
@@ -179,11 +219,9 @@ const MapWithImage = ({ mode = "user" }) => {
     link.href = dataUrl;
     link.download = `point-${namePart}-qr.png`;
     link.click();
-  };
+  }, [qrPoint]);
 
-  const handleCloseQrModal = () => setQrPoint(null);
-
-  const minZoomValue = isMobile ? -4 : -3;
+  const handleCloseQrModal = useCallback(() => setQrPoint(null), []);
 
   return (
     <div className="gz-layout">
@@ -200,15 +238,29 @@ const MapWithImage = ({ mode = "user" }) => {
           maxBoundsViscosity={1.0}
           minZoom={minZoomValue}
           maxZoom={4}
+          preferCanvas={true}
+          // важные оптимизации под мобилки
+          zoomAnimation={!isMobile}
+          markerZoomAnimation={!isMobile}
+          fadeAnimation={!isMobile}
+          // UX на мобилке часто лучше так:
+          scrollWheelZoom={!isMobile}
+          doubleClickZoom={!isMobile ? true : false}
+          touchZoom={true}
         >
           <ImageOverlay url={MapImage} bounds={bounds} />
 
           {/* 👇 Авто-зум по активному маршруту */}
-          <RouteAutoZoom coords={model.activeRouteCoords} />
+          <RouteAutoZoom
+            coords={model.activeRouteCoords}
+            isMobile={isMobile}
+          />
 
+          {/* 👇 Авто-центровка на точку */}
           <PointAutoZoom
             point={model.selectedPoint}
             zoom={isMobile ? 0 : 1}
+            isMobile={isMobile}
           />
 
           <AddPointController
@@ -238,7 +290,7 @@ const MapWithImage = ({ mode = "user" }) => {
               point={p}
               isActive={model.selectedPoint?.id === p.id}
               isDraggable={model.isAdmin}
-              onSelect={model.handleSelectPoint}
+              onSelect={onSelectPoint}
               onMove={handleMovePointWithHistory}
             />
           ))}
@@ -275,7 +327,7 @@ const MapWithImage = ({ mode = "user" }) => {
         isAdmin={model.isAdmin}
         points={model.sortedPoints}
         selectedPoint={model.selectedPoint}
-        onSelectPoint={model.handleSelectPoint}
+        onSelectPoint={onSelectPoint}
         routeFromId={model.routeFromId}
         routeToId={model.routeToId}
         onChangeRouteFrom={model.setRouteFromId}
