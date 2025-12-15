@@ -37,7 +37,7 @@ const RouteEditModal = ({
 
   const handleSave = async () => {
     try {
-      const res = await fetch(`${apiBase}/routes/${route.id}`, {
+      const res = await fetch(`${apiBase}/goodzone/routes/${route.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -59,7 +59,7 @@ const RouteEditModal = ({
   const handleDelete = async () => {
     if (!window.confirm("Видалити маршрут?")) return;
     try {
-      const res = await fetch(`${apiBase}/routes/${route.id}`, {
+      const res = await fetch(`${apiBase}/goodzone/routes/${route.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {

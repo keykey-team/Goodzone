@@ -1,7 +1,7 @@
 // controllers/point.controller.js
 import { Point } from "../models/point.model.js";
 
-// GET /api/points
+// GET /api/goodzone/points
 export async function getPoints(req, res) {
   try {
     const points = await Point.find().sort({ number: 1 });
@@ -12,7 +12,7 @@ export async function getPoints(req, res) {
   }
 }
 
-// POST /api/points
+// POST /api/goodzone/points
 export async function createPoint(req, res) {
   try {
     const point = await Point.create(req.body);
@@ -25,7 +25,7 @@ export async function createPoint(req, res) {
   }
 }
 
-// PUT /api/points/:id
+// PUT /api/goodzone/points/:id
 export async function updatePoint(req, res) {
   try {
     const { id } = req.params;
@@ -48,7 +48,7 @@ export async function updatePoint(req, res) {
   }
 }
 
-// DELETE /api/points/:id
+// DELETE /api/goodzone/points/:id
 export async function deletePoint(req, res) {
   try {
     const { id } = req.params;

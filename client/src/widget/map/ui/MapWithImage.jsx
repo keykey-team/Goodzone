@@ -46,6 +46,27 @@ const RouteAutoZoom = ({ coords }) => {
   return null;
 };
 
+const PointAutoZoom = ({ point, zoom = 1 }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!point?.coords) return;
+
+    // coords у тебя уже используются как latlng (Leaflet CRS.Simple)
+    const latlng = L.latLng(point.coords);
+
+    // можно flyTo для красивой анимации, или setView без анимации
+    map.panTo(latlng, {
+      animate: true,
+      duration: 0.6, // очень мягко
+      easeLinearity: 0.5,
+    });
+  }, [point?.id, map, zoom]);
+
+  return null;
+};
+
+
 const MapWithImage = ({ mode = "user" }) => {
   const model = useMapWithImageModel({ mode });
 
@@ -80,7 +101,7 @@ const MapWithImage = ({ mode = "user" }) => {
   // 🔍 Стартовый зум — НЕ отдаляем
   const initialZoom = -3;
 
-  
+
 
   // 👉 Автооткрытие модалки точки по ?point=ID
   useEffect(() => {
@@ -184,6 +205,11 @@ const MapWithImage = ({ mode = "user" }) => {
 
           {/* 👇 Авто-зум по активному маршруту */}
           <RouteAutoZoom coords={model.activeRouteCoords} />
+
+          <PointAutoZoom
+            point={model.selectedPoint}
+            zoom={isMobile ? 0 : 1}
+          />
 
           <AddPointController
             enabled={model.isAdmin && model.addPointMode}

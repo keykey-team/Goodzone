@@ -41,8 +41,8 @@ const upload = multer({
   },
 });
 
-// POST /api/upload/image
-// POST /api/upload/image
+// POST /api/goodzone/upload/image
+// POST /api/goodzone/upload/image
 router.post("/image", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {

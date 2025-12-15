@@ -10,13 +10,13 @@ import {
 
 const router = Router();
 
-// /api/routes
+// /api/goodzone/routes
 router.get("/", getRoutes);
 router.post("/", createRoute);
 router.put("/:id", updateRoute);
 router.delete("/:id", deleteRoute);
 
-// /api/routes/path?fromId=...&toId=...
+// /api/goodzone/routes/path?fromId=...&toId=...
 router.get("/path", getRoutePath);
 
 export default router;

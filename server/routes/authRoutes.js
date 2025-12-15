@@ -1,4 +1,4 @@
-// server/routes/authRoutes.js
+// server/goodzone/routes/authRoutes.js
 import express from "express";
 import jwt from "jsonwebtoken";
 
@@ -11,7 +11,7 @@ const {
   JWT_EXPIRES_IN = "7d",
 } = process.env;
 
-// POST /api/auth/login
+// POST /api/goodzone/auth/login
 router.post("/login", (req, res) => {
   const { login, password } = req.body || {};
 
