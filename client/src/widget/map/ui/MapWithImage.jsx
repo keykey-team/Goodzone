@@ -23,10 +23,32 @@ import AddPointController from "../../../features/map-add-point/ui/AddPointContr
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
 import { useMapWithImageModel } from "../model/useMapWithImageModel";
 
-/**
- * Отслеживаем, взаимодействует ли пользователь с картой (drag/zoom/pinch),
- * чтобы не конфликтовать программным pan/fitBounds.
- */
+const MarkerScaleByZoom = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const apply = () => {
+      const z = map.getZoom();
+
+      const scale =
+        z <= -4 ? 0.4 :
+          z <= -3 ? 0.65 :
+            z <= -2 ? 0.8 :
+              1;
+
+      const el = map.getContainer();
+      el.style.setProperty("--marker-scale", String(scale));
+    };
+
+    apply();
+    map.on("zoomend", apply);
+    return () => map.off("zoomend", apply);
+  }, [map]);
+
+  return null;
+};
+
+
 const UseUserInteractingFlag = () => {
   const map = useMap();
   const ref = useRef(false);
@@ -242,7 +264,7 @@ const MapWithImage = ({ mode = "user" }) => {
           updateWhenIdle={true}
         >
           <ImageOverlay url={MapImage} bounds={bounds} />
-
+          <MarkerScaleByZoom />
           <RouteAutoZoom coords={model.activeRouteCoords} isMobile={isMobile} />
 
           {/* ✅ При выборе точки НЕ зумим, только центрируем.

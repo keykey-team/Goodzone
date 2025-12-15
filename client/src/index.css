@@ -49,6 +49,21 @@ body,
   touch-action: none;
 }
 
+/* Масштабируем маркеры (divIcon) без пересоздания иконок */
+/* Leaflet управляет позицией — мы её не трогаем */
+.leaflet-container .marker-number {
+  pointer-events: auto;
+}
+
+/* Масштабируем ВНУТРИ иконки */
+.leaflet-container .marker-number .marker-number__circle {
+  transform: scale(var(--marker-scale, 1));
+  transform-origin: center;
+  will-change: transform;
+}
+
+
+
 .leaflet-image-layer {
   pointer-events: none;
 }
@@ -553,10 +568,10 @@ img {
   font-size: 13px;
   cursor: pointer;
 }
-
+/* 
 .marker-number {
   transform: translate(-20px, -20px);
-}
+} */
 
 .marker-number__circle {
   width: 28px;
