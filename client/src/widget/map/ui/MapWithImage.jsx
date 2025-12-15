@@ -237,7 +237,7 @@ const MapWithImage = ({ mode = "user" }) => {
           maxBounds={bounds}
           maxBoundsViscosity={1.0}
           minZoom={minZoomValue}
-          maxZoom={4}
+          maxZoom={1}
           preferCanvas={true}
           // важные оптимизации под мобилки
           zoomAnimation={!isMobile}
