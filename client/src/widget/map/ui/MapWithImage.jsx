@@ -18,7 +18,7 @@ import QrSidebar from "../../map-sidebar/ui/QrSidebar";
 import RouteCreateModal from "../../../features/route-create/ui/RouteCreateModal";
 import RouteChoiceModal from "../../../features/map-route-choice/ui/RouteChoiceModal";
 import RouteEditModal from "../../../features/route-edit/ui/RouteEditModal";
-import MapImage from "../../../assets/goodzoneMap8.webp";
+import MapImage from "../../../assets/goodzoneMap8.jpg";
 import { bounds } from "../config/mapConfig";
 import AddPointController from "../../../features/map-add-point/ui/AddPointController";
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
