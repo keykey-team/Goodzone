@@ -12,7 +12,6 @@ import { QRCodeCanvas } from "qrcode.react";
 
 import PointMarker from "../../../entities/point/ui/PointMarker";
 import ActiveRoutePolyline from "../../../features/map-build-route/ui/ActiveRoutePoline";
-// import AutoFitBounds from "../../../shared/ui/AutoFitBounds"; // не используем
 import PlaceModal from "../../../features/point-manage/ui/PlaceModal";
 import QrSidebar from "../../map-sidebar/ui/QrSidebar";
 import RouteCreateModal from "../../../features/route-create/ui/RouteCreateModal";
@@ -23,7 +22,6 @@ import { bounds } from "../config/mapConfig";
 import AddPointController from "../../../features/map-add-point/ui/AddPointController";
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
 import { useMapWithImageModel } from "../model/useMapWithImageModel";
-
 
 /**
  * Отслеживаем, взаимодействует ли пользователь с картой (drag/zoom/pinch),
@@ -59,7 +57,6 @@ const RouteAutoZoom = ({ coords, isMobile }) => {
   useEffect(() => {
     if (!coords || coords.length < 2) return;
 
-    // дебаунсим, чтобы не фитить bounds "по шагам"
     const t = setTimeout(() => {
       if (interactingRef.current) return;
 
@@ -81,9 +78,11 @@ const RouteAutoZoom = ({ coords, isMobile }) => {
 };
 
 /**
- * Авто-центровка на выбранную точку (без конфликтов с жестами)
+ * Центровка на выбранную точку:
+ * - НЕ увеличиваем зум (чтобы не было резкого приближения)
+ * - можно ограничить максимум зума, если вдруг текущий слишком большой
  */
-const PointAutoZoom = ({ point, zoom = 1, isMobile }) => {
+const PointAutoZoom = ({ point, isMobile, maxZoomOnSelect = 0 }) => {
   const map = useMap();
   const interactingRef = UseUserInteractingFlag();
 
@@ -93,11 +92,17 @@ const PointAutoZoom = ({ point, zoom = 1, isMobile }) => {
 
     const latlng = L.latLng(point.coords);
 
-    // setView легче, чем panTo + animate
-    map.setView(latlng, zoom ?? map.getZoom(), {
+    // оставляем текущий зум, но не выше maxZoomOnSelect
+    const currentZoom = map.getZoom();
+    const nextZoom =
+      typeof maxZoomOnSelect === "number"
+        ? Math.min(currentZoom, maxZoomOnSelect)
+        : currentZoom;
+
+    map.setView(latlng, nextZoom, {
       animate: !isMobile,
     });
-  }, [point?.id, map, zoom, isMobile, interactingRef]);
+  }, [point?.id, map, isMobile, maxZoomOnSelect, interactingRef]);
 
   return null;
 };
@@ -105,28 +110,19 @@ const PointAutoZoom = ({ point, zoom = 1, isMobile }) => {
 const MapWithImage = ({ mode = "user" }) => {
   const model = useMapWithImageModel({ mode });
 
-  // 👉 состояние для модалки с большим QR
   const [qrPoint, setQrPoint] = useState(null);
   const qrCanvasRef = useRef(null);
 
-  // 👉 для undo последнего перетаскивания точки
   const [lastMove, setLastMove] = useState(null);
-
-  // реф на карточку с картой — для scrollIntoView
   const mapCardRef = useRef(null);
 
-  // Базовый URL сайта (для ссылок в QR)
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-
-  // 📱 проверяем мобилу
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-  // 📍 Границы картинки (мемо, чтобы не пересоздавать)
   const imgBounds = useMemo(() => L.latLngBounds(bounds), []);
   const bottomLeft = imgBounds.getSouthWest();
   const bottomRight = imgBounds.getSouthEast();
 
-  // 📍 Центр — разный для мобилки и десктопа (мемо)
   const initialCenter = useMemo(() => {
     if (!isMobile) return bottomLeft;
     const centerLng = (bottomLeft.lng + bottomRight.lng) / 2;
@@ -134,6 +130,9 @@ const MapWithImage = ({ mode = "user" }) => {
   }, [isMobile, bottomLeft, bottomRight]);
 
   const minZoomValue = isMobile ? -4 : -3;
+
+  // ✅ уменьшаем максимальный зум
+  const maxZoomValue = isMobile ? -1.5 : -1.5;
 
   // 👉 Автооткрытие модалки точки по ?point=ID
   useEffect(() => {
@@ -151,11 +150,7 @@ const MapWithImage = ({ mode = "user" }) => {
     }
   }, [model.sortedPoints, model]);
 
-  // стабилизируем колбэки (важно для React.memo PointMarker)
-  const onSelectPoint = useCallback(
-    (p) => model.handleSelectPoint(p),
-    [model]
-  );
+  const onSelectPoint = useCallback((p) => model.handleSelectPoint(p), [model]);
 
   const handleMovePointWithHistory = useCallback(
     async (point, coords) => {
@@ -176,7 +171,6 @@ const MapWithImage = ({ mode = "user" }) => {
     [model]
   );
 
-  // когда появился активный маршрут → просто скроллим к карте
   useEffect(() => {
     const coords = model.activeRouteCoords;
     if (!coords || coords.length < 2) return;
@@ -188,7 +182,6 @@ const MapWithImage = ({ mode = "user" }) => {
     });
   }, [model.activeRouteCoords]);
 
-  // 👉 Ctrl+Z / Cmd+Z — откат последнего перетаскивания точки
   useEffect(() => {
     const handleKeyDown = (e) => {
       const isUndoKey =
@@ -237,30 +230,27 @@ const MapWithImage = ({ mode = "user" }) => {
           maxBounds={bounds}
           maxBoundsViscosity={1.0}
           minZoom={minZoomValue}
-          maxZoom={1}
+          maxZoom={maxZoomValue}
           preferCanvas={true}
-          // важные оптимизации под мобилки
           zoomAnimation={!isMobile}
           markerZoomAnimation={!isMobile}
           fadeAnimation={!isMobile}
-          // UX на мобилке часто лучше так:
           scrollWheelZoom={!isMobile}
-          doubleClickZoom={!isMobile ? true : false}
+          doubleClickZoom={!isMobile}
           touchZoom={true}
+          updateWhenZooming={false}
+          updateWhenIdle={true}
         >
           <ImageOverlay url={MapImage} bounds={bounds} />
 
-          {/* 👇 Авто-зум по активному маршруту */}
-          <RouteAutoZoom
-            coords={model.activeRouteCoords}
-            isMobile={isMobile}
-          />
+          <RouteAutoZoom coords={model.activeRouteCoords} isMobile={isMobile} />
 
-          {/* 👇 Авто-центровка на точку */}
+          {/* ✅ При выборе точки НЕ зумим, только центрируем.
+              maxZoomOnSelect можно поставить -1/0/1 как тебе комфортно */}
           <PointAutoZoom
             point={model.selectedPoint}
-            zoom={isMobile ? 0 : 1}
             isMobile={isMobile}
+            maxZoomOnSelect={0}
           />
 
           <AddPointController
@@ -307,7 +297,6 @@ const MapWithImage = ({ mode = "user" }) => {
               />
             ))}
 
-          {/* активный маршрут А→Б */}
           <ActiveRoutePolyline coords={model.activeRouteCoords} />
         </MapContainer>
 
@@ -317,7 +306,7 @@ const MapWithImage = ({ mode = "user" }) => {
               className={`gz-tool-btn ${model.addPointMode ? "active" : ""}`}
               onClick={model.toggleAddPointMode}
             >
-              Додати об'єкт
+              Додати об&apos;єкт
             </button>
           </div>
         )}
@@ -373,7 +362,6 @@ const MapWithImage = ({ mode = "user" }) => {
         onDeleted={model.handleRouteDeleted}
       />
 
-      {/* 👉 Модалка с большим QR для админа */}
       {model.isAdmin && qrPoint && (
         <div className="gz-modal-backdrop" onClick={handleCloseQrModal}>
           <div className="gz-qr-modal" onClick={(e) => e.stopPropagation()}>
