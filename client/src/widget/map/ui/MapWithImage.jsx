@@ -17,7 +17,7 @@ import QrSidebar from "../../map-sidebar/ui/QrSidebar";
 import RouteCreateModal from "../../../features/route-create/ui/RouteCreateModal";
 import RouteChoiceModal from "../../../features/map-route-choice/ui/RouteChoiceModal";
 import RouteEditModal from "../../../features/route-edit/ui/RouteEditModal";
-import MapImage from "../../../assets/goodzoneMap8.jpg";
+import MapImage from "../../../assets/map-actual.jpg";
 import { bounds } from "../config/mapConfig";
 import AddPointController from "../../../features/map-add-point/ui/AddPointController";
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
@@ -224,6 +224,14 @@ const MapWithImage = ({ mode = "user" }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lastMove, model, model.sortedPoints]);
 
+  const isValidCoords = (coords) =>
+    Array.isArray(coords) &&
+    coords.length === 2 &&
+    typeof coords[0] === "number" &&
+    typeof coords[1] === "number" &&
+    !Number.isNaN(coords[0]) &&
+    !Number.isNaN(coords[1]);
+
   const handleDownloadQr = useCallback(() => {
     const canvas = qrCanvasRef.current;
     if (!canvas) return;
@@ -296,16 +304,18 @@ const MapWithImage = ({ mode = "user" }) => {
             </FeatureGroup>
           )}
 
-          {model.sortedPoints.map((p) => (
-            <PointMarker
-              key={p.id}
-              point={p}
-              isActive={model.selectedPoint?.id === p.id}
-              isDraggable={model.isAdmin}
-              onSelect={onSelectPoint}
-              onMove={handleMovePointWithHistory}
-            />
-          ))}
+          {model.sortedPoints
+            .filter((p) => isValidCoords(p.coords))
+            .map((p) => (
+              <PointMarker
+                key={p.id}
+                point={p}
+                isActive={model.selectedPoint?.id === p.id}
+                isDraggable={model.isAdmin}
+                onSelect={onSelectPoint}
+                onMove={handleMovePointWithHistory}
+              />
+            ))}
 
           {model.isAdmin &&
             model.routes.map((r) => (
@@ -350,6 +360,7 @@ const MapWithImage = ({ mode = "user" }) => {
       />
 
       <PlaceModal
+        key={model?.selectedPoint?.id || "place-modal"}
         open={model.isPointModalOpen}
         point={model.selectedPoint}
         isAdmin={model.isAdmin}

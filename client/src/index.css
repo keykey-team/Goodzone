@@ -124,13 +124,13 @@ body,
 }
 
 img {
-  height: 83px;
+  height: 130px;
   aspect-ratio: 197/83;
 }
 
 @media (max-width: 768px) {
   .gz-side-header img {
-    height: 30px;
+    height: 40px;
 
   }
 }
@@ -231,6 +231,7 @@ img {
   height: 100%;
   align-items: center;
   justify-content: center;
+  font-size: 12px;
 }
 
 .icon-search {
@@ -454,7 +455,7 @@ img {
 
 /* "строка" селекта — уже есть у тебя, просто дополним */
 .gz-object-item-select {
-  justify-content: space-between;
+  /* justify-content: space-between; */
   /* текст слева, стрелка справа */
 }
 
@@ -656,6 +657,102 @@ img {
   font-size: 24px;
   cursor: pointer;
   line-height: 1;
+}
+
+.gz-image-loader {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(235, 235, 235, 0.55);
+  backdrop-filter: blur(2px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gz-logo-loader {
+  width: 46px;
+  height: 46px;
+
+  animation: gz-logo-pulse 1.6s ease-in-out infinite;
+  opacity: 0.9;
+}
+
+@keyframes gz-logo-pulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 0.35;
+  }
+}
+
+@media (max-width: 768px) {
+  .gz-modal-backdrop {
+    align-items: center;         /* чтобы модалка не “прыгала” по центру */
+    padding: 12px;                  /* отступы от краёв */
+    overflow: hidden;               /* не даём бэкдропу скроллиться */
+  }
+
+  .gz-object-modal {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: calc(100vh - 24px); /* 🔥 ограничили высоту */
+    overflow: hidden;               /* 🔥 скролл будет внутри */
+    transform: none !important;
+    padding: 14px 14px 12px;        /* чуть компактнее */
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gz-modal-close {
+    position: sticky;               /* 🔥 крестик всегда сверху */
+    top: 0;
+    align-self: flex-end;
+    z-index: 5;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(6px);
+    border-radius: 10px;
+    padding: 6px;
+    margin: 2px 2px 8px 0;
+  }
+
+  .gz-object-content {
+    flex: 1;
+    overflow-y: auto;               /* 🔥 главный скролл тут */
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 2px;             /* чтобы скроллбар не перекрывал */
+  }
+
+  .gz-object-image {
+    width: 100% !important;
+    height: auto;
+  }
+
+  .gz-object-image img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 220px;              /* чтобы картинка не съедала весь экран */
+    object-fit: cover;
+  }
+
+  .gz-modal-close-mobile {
+    display: none;                  /* можно скрыть, раз есть крестик */
+  }
 }
 
 @media (max-width: 768px) {
@@ -899,6 +996,7 @@ img {
 @media (max-width: 768px) {
   .gz-object-label {
     font-size: 10px;
+    margin-top: 65px;
   }
 }
 
@@ -936,6 +1034,18 @@ img {
   display: flex;
   gap: 8px;
   margin-top: 12px;
+}
+
+
+  .gz-input{
+    margin-top: 10px;
+  }
+
+
+@media (max-width:768px) {
+  .gz-object-actions{
+    margin-bottom: 10px;
+  }
 }
 
 .gz-btn-primary,
@@ -987,12 +1097,30 @@ img {
   text-transform: uppercase;
 }
 
-.gz-object-line span {
+.gz-object-link {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+  text-decoration: underline;
+}
+
+.gz-object-link img {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+  transform: translateY(-1px); /* чуть поднимает как в дизайне */
+}
+
+.gz-object-line span,
+.gz-object-line a {
   color: #2F6C4F;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: normal;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 
