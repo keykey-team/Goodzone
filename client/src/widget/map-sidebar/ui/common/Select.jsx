@@ -9,6 +9,15 @@ const ObjectSelect = ({ label, value, onChange, points }) => {
 
   const selected = points.find((p) => p.id === value) || null;
 
+  // ✅ утилита: нормализуем массив тегов в строку для поиска
+  const tagsToSearchString = (tags) => {
+    if (!Array.isArray(tags)) return "";
+    return tags
+      .map((t) => (t == null ? "" : String(t)))
+      .join(" ")
+      .toLowerCase();
+  };
+
   // когда выбрали точку — подставляем в инпут её текст
   useEffect(() => {
     if (selected) {
@@ -42,9 +51,19 @@ const ObjectSelect = ({ label, value, onChange, points }) => {
       return points;
     }
 
+    // ✅ поддержка поиска по нескольким словам + по тегам
+    const tokens = q.split(/\s+/).filter(Boolean);
+
     return points.filter((p) => {
-      const label = `${p.number} — ${p.name || ""}`.toLowerCase();
-      return label.includes(q);
+      const numberStr = String(p.number ?? "").toLowerCase();
+      const nameStr = String(p.name ?? "").toLowerCase();
+      const tagsStr = tagsToSearchString(p.manualSearchingTags);
+
+      // ✅ каждая часть запроса должна где-то совпасть
+      return tokens.every(
+        (t) =>
+          numberStr.includes(t) || nameStr.includes(t) || tagsStr.includes(t)
+      );
     });
   }, [query, points, selected]);
 
@@ -85,13 +104,30 @@ const ObjectSelect = ({ label, value, onChange, points }) => {
             </span>
           )}
 
-          <input
-            className="gz-select-input"
-            placeholder="Оберіть об’єкт"
-            value={query}
-            onChange={handleInputChange}
-            onFocus={() => setOpen(true)}
-          />
+          {/* 🔽 обёртка для ellipsis */}
+          <div
+            style={{
+              width: "83%",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <input
+              placeholder="Оберіть об’єкт"
+              value={query}
+              onChange={handleInputChange}
+              onFocus={() => setOpen(true)}
+              style={{
+                all: "unset",
+                width: "100%",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "block",
+                cursor: "text",
+              }}
+            />
+          </div>
 
           <span className="gz-custom-select__arrow" />
         </div>

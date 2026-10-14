@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import logoImg from "../../../assets/logo.png";
+import logoImg from "../../../assets/logo.svg";
 import SearchIcon from "../../../shared/icons/SearchIcon";
 import ObjectSelect from "./common/Select";
 import { IconWrapper } from "./common/IconWrapper";
@@ -18,7 +18,7 @@ const QrSidebar = ({
   onBuildRoute,
   addPointMode,
   onToggleAddPointMode,
-  onOpenQr
+  onOpenQr,
 }) => {
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
@@ -30,14 +30,36 @@ const QrSidebar = ({
   const baseUrl =
     typeof window !== "undefined" ? window.location.origin : "";
 
+  // ✅ утилита: нормализуем массив тегов в строку для поиска
+  const tagsToSearchString = (tags) => {
+    if (!Array.isArray(tags)) return "";
+    return tags
+      .map((t) => (t == null ? "" : String(t)))
+      .join(" ")
+      .toLowerCase();
+  };
+
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    if (!q) return points;
-    return points.filter(
-      (p) =>
-        String(p.number).includes(q) ||
-        (p.name || "").toLowerCase().includes(q)
-    );
+    const raw = search.toLowerCase().trim();
+    if (!raw) return points;
+
+    // ✅ поддержка поиска по нескольким словам: "spa бас"
+    const tokens = raw.split(/\s+/).filter(Boolean);
+
+    return points.filter((p) => {
+      const numberStr = String(p.number ?? "").toLowerCase();
+      const nameStr = String(p.name ?? "").toLowerCase();
+      const tagsStr = tagsToSearchString(p.manualSearchingTags);
+
+      // ✅ каждая часть запроса должна где-то совпасть
+      return tokens.every((t) => {
+        return (
+          numberStr.includes(t) ||
+          nameStr.includes(t) ||
+          tagsStr.includes(t)
+        );
+      });
+    });
   }, [search, points]);
 
   // закрытие селекта по клику мимо
@@ -97,7 +119,7 @@ const QrSidebar = ({
 
             <input
               className="gz-select-input"
-              placeholder="Пошук за назвою, або номером"
+              placeholder="Пошук за назвою або номером"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -107,14 +129,16 @@ const QrSidebar = ({
               onClick={(e) => e.stopPropagation()}
             />
 
-            <span className="gz-custom-select__arrow" />
+            {/* <span className="gz-custom-select__arrow" /> */}
           </div>
 
           {/* dropdown */}
           {objectsOpen && (
             <div className="gz-custom-select__dropdown gz-objects-list">
               {filtered.map((p) => {
-                const qrUrl = `${baseUrl}/?point=${encodeURIComponent(p.id)}`;
+                const qrUrl = `${baseUrl}/?point=${encodeURIComponent(
+                  p.id
+                )}`;
                 const isActive = selectedPoint?.id === p.id;
 
                 return (

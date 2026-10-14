@@ -1,48 +1,205 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { apiBase } from "../../../shared/config/apiBase";
 import Cross from "../../../shared/ui/Cross";
 import GoodZoneImg from "../../../assets/goodzone.png";
+import GoodZoneImgArrow from "../../../assets/external-link-svgrepo-com.svg";
+import GoodZoneLogo from "../../../assets/logo-title.svg";
+
+/**
+ * ⚠️ API-домен, где реально лежат /uploads
+ * если у тебя только http — замени на http
+ */
+const API_ORIGIN = "https://map.goodzonehotel.com.ua";
+
+/**
+ * Превращает imageUrl из базы в корректный src
+ */
+function resolveImageSrc(imageUrl) {
+  if (!imageUrl) return "";
+
+  if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+  if (imageUrl.startsWith("/uploads/")) return `${API_ORIGIN}${imageUrl}`;
+  if (imageUrl.startsWith("/")) return `${API_ORIGIN}${imageUrl}`;
+
+  return `${API_ORIGIN}/${imageUrl}`;
+}
+
+/** =========================
+ *  TAGS UTILS (chips)
+ *  ========================= */
+const normalizeTag = (v) =>
+  String(v ?? "")
+    .trim()
+    .replace(/\s+/g, " ");
+
+const uniqTags = (arr) => {
+  const set = new Set();
+
+  (arr || []).forEach((t) => {
+    const nt = normalizeTag(t);
+    if (!nt) return;
+    set.add(nt);
+  });
+
+  return Array.from(set);
+};
+
+/** =========================
+ *  NUMBER UTILS (unique check)
+ *  ========================= */
+const normalizeBaseNumber = (v) =>
+  String(v ?? "").replace(/[^\d]/g, "").trim();
+
+const isSamePoint = (a, b) => String(a?.id) === String(b?.id);
+
+async function fetchPointsSafe() {
+  try {
+    const res = await fetch(`${apiBase}/goodzone/points`);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+function getInitialForm(point) {
+  const initialTags = uniqTags(
+    Array.isArray(point?.manualSearchingTags) ? point.manualSearchingTags : []
+  );
+
+  const pointNumberStr = String(point?.number ?? "");
+  const baseFromDb = normalizeBaseNumber(pointNumberStr);
+
+  return {
+    number: baseFromDb || "",
+    name: point?.name || "",
+    description: point?.description || "",
+    workingHours: point?.workingHours || "",
+    locationText: point?.locationText || "",
+    type: point?.type || "",
+    imageUrl: point?.imageUrl || "",
+    manualSearchingTags: initialTags,
+    link: point?.link || "",
+  };
+}
 
 const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    workingHours: "",
-    locationText: "",
-    type: "",
-    imageUrl: "",
-  });
+  const [form, setForm] = useState(() => getInitialForm(point));
 
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    if (point) {
-      setForm({
-        name: point.name || "Локація комплексу",
-        description:
-          point.description ||
-          "Затишна локація на території комплексу. Тут можна відпочити, провести час з родиною або зробити гарні фото.",
-        workingHours: point.workingHours || "Щодня 09:00 – 22:00",
-        locationText: point.locationText || "Центральна частина комплексу",
-        type: point.type || "",
-        imageUrl:
-          // point.imageUrl ||
-          GoodZoneImg
-      });
+  const [tagInput, setTagInput] = useState("");
+
+  const [allPoints, setAllPoints] = useState([]);
+  const [pointsLoaded, setPointsLoaded] = useState(false);
+
+  const [numberTouched, setNumberTouched] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+
+  /** =========================
+   *  MEMO
+   *  ========================= */
+  const baseNumber = useMemo(
+    () => normalizeBaseNumber(form.number),
+    [form.number]
+  );
+
+  const conflictPoint = useMemo(() => {
+    if (!baseNumber) return null;
+    if (!point) return null;
+
+    return (allPoints || []).find((p) => {
+      if (isSamePoint(p, point)) return false;
+      return String(p.number ?? "").trim() === baseNumber;
+    });
+  }, [allPoints, baseNumber, point]);
+
+  const numberError = useMemo(() => {
+    if (!isAdmin) return "";
+    if (numberTouched && !baseNumber) return "Вкажіть номер об’єкта";
+
+    if (conflictPoint) {
+      return `Номер ${baseNumber} вже використовується: ОБ’ЄКТ №${conflictPoint.number} — “${conflictPoint.name}”. Виберіть інший номер.`;
     }
+
+    return "";
+  }, [isAdmin, numberTouched, baseNumber, conflictPoint]);
+
+  const canSave = useMemo(() => {
+    if (!isAdmin) return false;
+    if (!pointsLoaded) return false;
+    if (!baseNumber) return false;
+    if (conflictPoint) return false;
+    return true;
+  }, [isAdmin, pointsLoaded, baseNumber, conflictPoint]);
+
+  const currentImageUrl = form.imageUrl || point?.imageUrl || "";
+  const resolvedImageSrc = currentImageUrl
+    ? resolveImageSrc(currentImageUrl)
+    : "";
+  const imageKey = `${point?.id || "no-point"}-${resolvedImageSrc || "fallback"}`;
+
+  /** =========================
+   *  EFFECTS
+   *  ========================= */
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      if (!open) return;
+      setPointsLoaded(false);
+      const pts = await fetchPointsSafe();
+      if (!alive) return;
+      setAllPoints(Array.isArray(pts) ? pts : []);
+      setPointsLoaded(true);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!point) return;
+
+    setForm(getInitialForm(point));
+    setTagInput("");
+    setNumberTouched(false);
   }, [point]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    if (resolvedImageSrc) {
+      setImageLoading(true);
+    } else {
+      setImageLoading(false);
+    }
+  }, [open, imageKey, resolvedImageSrc]);
 
   if (!open || !point) return null;
 
+  /** =========================
+   *  handlers
+   *  ========================= */
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "number") {
+      const onlyDigits = normalizeBaseNumber(value);
+      setForm((f) => ({ ...f, number: onlyDigits }));
+      return;
+    }
+
     setForm((f) => ({ ...f, [name]: value }));
   };
 
   const clearPointQuery = () => {
     if (typeof window === "undefined") return;
+
     const url = new URL(window.location.href);
     url.searchParams.delete("point");
     window.history.replaceState(null, "", url.toString());
@@ -53,31 +210,112 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
     onClose();
   };
 
+  const handleOpenConflict = () => {
+    if (!conflictPoint?.id) return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("point", conflictPoint.id);
+    window.history.replaceState(null, "", url.toString());
+    window.location.reload();
+  };
+
+  /** TAGS CHIPS */
+  const addTag = (raw) => {
+    const t = normalizeTag(raw);
+    if (!t) return;
+
+    setForm((f) => ({
+      ...f,
+      manualSearchingTags: uniqTags([...(f.manualSearchingTags || []), t]),
+    }));
+  };
+
+  const removeTag = (tag) => {
+    setForm((f) => ({
+      ...f,
+      manualSearchingTags: (f.manualSearchingTags || []).filter((x) => x !== tag),
+    }));
+  };
+
+  const handleTagKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
+      if (tagInput.trim()) {
+        e.preventDefault();
+        addTag(tagInput);
+        setTagInput("");
+      }
+      return;
+    }
+
+    if (e.key === "Backspace" && !tagInput) {
+      const last =
+        form.manualSearchingTags?.[form.manualSearchingTags.length - 1];
+      if (last) removeTag(last);
+    }
+  };
+
+  const handleTagPaste = (e) => {
+    const text = e.clipboardData?.getData("text") || "";
+    if (!text) return;
+
+    const parts = text.split(/[,\n;]/g).map(normalizeTag).filter(Boolean);
+    if (parts.length <= 1) return;
+
+    e.preventDefault();
+    setForm((f) => ({
+      ...f,
+      manualSearchingTags: uniqTags([...(f.manualSearchingTags || []), ...parts]),
+    }));
+  };
+
+  /** SAVE */
   const handleSave = async () => {
-    const body = { ...point, ...form };
+    setNumberTouched(true);
+
+    if (!canSave) return;
+
+    const body = {
+      ...point,
+      ...form,
+      number: baseNumber,
+      manualSearchingTags: Array.isArray(form.manualSearchingTags)
+        ? uniqTags(form.manualSearchingTags)
+        : [],
+    };
+
     const res = await fetch(`${apiBase}/goodzone/points/${point.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const updated = await res.json();
-    onSave(updated);
-    handleClose();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error(err);
+      return;
+    }
+
+    const updatedPoint = await res.json();
+
+    if (typeof onSave === "function") {
+      onSave(updatedPoint);
+    } else {
+      window.location.reload();
+    }
   };
 
   const handleDelete = async () => {
     if (!onDelete) return;
     if (!window.confirm("Видалити об’єкт?")) return;
+
     await fetch(`${apiBase}/goodzone/points/${point.id}`, { method: "DELETE" });
+
     onDelete(point.id);
     handleClose();
   };
 
-  const handleUploadClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
+  /** UPLOAD */
+  const handleUploadClick = () => fileInputRef.current?.click();
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -88,6 +326,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
     try {
       setUploading(true);
+
       const res = await fetch(`${apiBase}/goodzone/upload/image`, {
         method: "POST",
         body: formData,
@@ -95,7 +334,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.message || "Помилка завантаження файлу");
+        console.error(err);
         return;
       }
 
@@ -105,7 +344,6 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
       }
     } catch (error) {
       console.error(error);
-      alert("Помилка під час завантаження файлу");
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -114,24 +352,49 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
   return (
     <div className="gz-modal-backdrop" onClick={handleClose}>
-      <div className="gz-object-modal"  style={{ transform: "none" }} onClick={(e) => e.stopPropagation()}>
+      <div
+        className="gz-object-modal"
+        style={{ transform: "none" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="gz-modal-close" onClick={handleClose}>
           <Cross />
         </button>
 
         <div className="gz-object-content">
-          <div className="gz-object-image">
-            {form.imageUrl ? (
-              <img src={form.imageUrl} alt={form.name} />
+          <div className="gz-object-image" style={{ position: "relative" }}>
+            {resolvedImageSrc ? (
+              <img
+                key={imageKey}
+                src={resolvedImageSrc}
+                alt={form.name || point?.name || "GoodZone"}
+                onLoad={() => setImageLoading(false)}
+                onError={(e) => {
+                  e.currentTarget.src = GoodZoneImg;
+                  setImageLoading(false);
+                }}
+              />
             ) : (
-              <div className="gz-object-image--empty">Немає фото</div>
+              <img
+                key={imageKey}
+                src={GoodZoneImg}
+                alt="GoodZone"
+                onLoad={() => setImageLoading(false)}
+              />
+            )}
+
+            {imageLoading && (
+              <div className="gz-image-loader">
+                <img
+                  src={GoodZoneLogo}
+                  alt="loading"
+                  className="gz-logo-loader"
+                />
+              </div>
             )}
 
             {isAdmin && (
-              <div
-                className="uploading-img-wrapper"
-                style={{ marginTop: "8px" }}
-              >
+              <div className="uploading-img-wrapper" style={{ marginTop: 8 }}>
                 <input
                   type="file"
                   accept="image/*"
@@ -166,7 +429,61 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
 
           <div className="gz-object-text">
             <div className="gz-object-header">
-              <div className="gz-object-label">ОБ’ЄКТ №{point.number}</div>
+              {isAdmin ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label
+                    className="gz-object-label"
+                    style={{ display: "flex", gap: 8, alignItems: "center" }}
+                  >
+                    ОБ’ЄКТ №
+                    <input
+                      name="number"
+                      className="gz-input"
+                      value={form.number}
+                      onChange={handleChange}
+                      onBlur={() => setNumberTouched(true)}
+                      inputMode="numeric"
+                      placeholder="№"
+                      style={{ width: 90, padding: "6px 10px" }}
+                    />
+                  </label>
+
+                  {(!pointsLoaded || numberError) && (
+                    <div
+                      className="gz-error-text"
+                      style={{
+                        fontSize: 12,
+                        lineHeight: "16px",
+                        color: numberError ? "#dc2626" : "#6b7280",
+                      }}
+                    >
+                      {!pointsLoaded ? "Перевіряємо унікальність номера…" : numberError}
+
+                      {conflictPoint && (
+                        <button
+                          type="button"
+                          onClick={handleOpenConflict}
+                          style={{
+                            marginLeft: 8,
+                            border: "none",
+                            background: "transparent",
+                            color: "#2F6C4F",
+                            textDecoration: "underline",
+                            cursor: "pointer",
+                            padding: 0,
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          Відкрити
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="gz-object-label">ОБ’ЄКТ №{point.number}</div>
+              )}
 
               {isAdmin ? (
                 <input
@@ -191,6 +508,7 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
                   onChange={handleChange}
                   placeholder="Опис об’єкту"
                 />
+
                 <div className="gz-object-fields">
                   <label className="gz-label">
                     Час роботи
@@ -199,19 +517,33 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
                       className="gz-input"
                       value={form.workingHours}
                       onChange={handleChange}
-                      placeholder="Щодня 09:00–22:00"
                     />
                   </label>
+
+                  <label className="gz-label">
+                    Інформація про точку
+                    <input
+                      name="link"
+                      className="gz-input"
+                      value={form.link}
+                      onChange={handleChange}
+                      placeholder="https://..."
+                    />
+                  </label>
+
                   <label className="gz-label">
                     Розташування
-                    <input
+                    <textarea
                       name="locationText"
-                      className="gz-input"
+                      className="gz-object-textarea"
+                      rows={4}
                       value={form.locationText}
                       onChange={handleChange}
-                      placeholder="Наприклад, біля головного корпусу"
+                      placeholder="Опишіть розташування..."
+                      style={{ resize: "vertical", marginTop: 6 }}
                     />
                   </label>
+
                   <label className="gz-label">
                     URL зображення
                     <input
@@ -219,15 +551,104 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
                       className="gz-input"
                       value={form.imageUrl}
                       onChange={handleChange}
-                      placeholder="https://..."
+                      placeholder="/uploads/..."
                     />
+                  </label>
+
+                  <label className="gz-label">
+                    Слова для пошуку (Enter / “,” щоб додати)
+                    <div
+                      className="gz-input"
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        minHeight: 42,
+                        padding: "8px 10px",
+                      }}
+                      onClick={() =>
+                        document.getElementById("gz-tags-input")?.focus()
+                      }
+                    >
+                      {(form.manualSearchingTags || []).map((t) => (
+                        <span
+                          key={t}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "4px 8px",
+                            borderRadius: 999,
+                            background: "rgba(47,108,79,0.12)",
+                            fontSize: 12,
+                            lineHeight: "16px",
+                          }}
+                        >
+                          {t}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeTag(t);
+                            }}
+                            aria-label="remove tag"
+                            style={{
+                              border: "none",
+                              background: "transparent",
+                              cursor: "pointer",
+                              fontSize: 14,
+                              lineHeight: "14px",
+                              padding: 0,
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+
+                      <input
+                        id="gz-tags-input"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagKeyDown}
+                        onPaste={handleTagPaste}
+                        placeholder="напр: spa, басейн, ресторан"
+                        style={{
+                          border: "none",
+                          outline: "none",
+                          flex: 1,
+                          minWidth: 160,
+                          background: "transparent",
+                          padding: "4px 0",
+                        }}
+                      />
+                    </div>
                   </label>
                 </div>
 
                 <div className="gz-object-actions">
-                  <button className="gz-btn-primary" onClick={handleSave}>
+                  <button
+                    className="gz-btn-primary"
+                    onClick={handleSave}
+                    disabled={!canSave}
+                    style={
+                      !canSave ? { opacity: 0.6, cursor: "not-allowed" } : undefined
+                    }
+                    title={
+                      !pointsLoaded
+                        ? "Зачекайте, перевіряємо унікальність номера…"
+                        : conflictPoint
+                          ? "Цей номер вже зайнятий"
+                          : !baseNumber
+                            ? "Вкажіть номер"
+                            : ""
+                    }
+                  >
                     ЗБЕРЕГТИ
                   </button>
+
                   <button className="gz-btn-danger" onClick={handleDelete}>
                     ВИДАЛИТИ
                   </button>
@@ -235,23 +656,42 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
               </>
             ) : (
               <>
-                <p className="gz-object-desc">{form.description}</p>
+                {form.description && (
+                  <p className="gz-object-desc">{form.description}</p>
+                )}
 
-                <p className="gz-object-line">
-                  <strong>ЧАС РОБОТИ: </strong>
-                  <span>{form.workingHours}</span>
-                </p>
+                {form.workingHours && (
+                  <p className="gz-object-line">
+                    <strong>ЧАС РОБОТИ: </strong>
+                    <span>{form.workingHours}</span>
+                  </p>
+                )}
 
-                <p className="gz-object-line">
-                  <strong>РОЗТАШУВАННЯ: </strong>
-                  <span>{form.locationText}</span>
-                </p>
+                {form.link && (
+                  <p className="gz-object-line">
+                    <a
+                      href={form.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="gz-object-link"
+                    >
+                      ІНФОРМАЦІЯ ПРО ТОЧКУ
+                      <img src={GoodZoneImgArrow} alt="" />
+                    </a>
+                  </p>
+                )}
+
+                {form.locationText && (
+                  <p className="gz-object-line">
+                    <strong>РОЗТАШУВАННЯ: </strong>
+                    <span>{form.locationText}</span>
+                  </p>
+                )}
               </>
             )}
           </div>
         </div>
 
-        {/* Мобильная кнопка "Закрити" (показывается только на мобиле через CSS) */}
         <button
           type="button"
           className="gz-btn-secondary gz-modal-close-mobile"
@@ -259,6 +699,16 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
         >
           Закрити
         </button>
+
+        <style>
+          {`
+            @keyframes gz-spin {
+              to {
+                transform: rotate(360deg);
+              }
+            }
+          `}
+        </style>
       </div>
     </div>
   );
