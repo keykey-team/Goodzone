@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Cross from "../../../shared/ui/Cross";
 
-const apiBase = "http://185.237.205.12/api";
+import { apiBase } from "../../../shared/config/apiBase";
 
 const RouteEditModal = ({
   open,

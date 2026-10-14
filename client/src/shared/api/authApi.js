@@ -1,4 +1,4 @@
-const apiBase = "http://185.237.205.12/api";
+import { apiBase } from "../config/apiBase";
 
 export const loginAdmin = async (login, password) => {
   const res = await fetch(`${apiBase}/goodzone/auth/login`, {

@@ -5,8 +5,8 @@ import { createNumberIcon } from "../lib/createNumberIcon";
 
 const PointMarker = ({ point, isActive, isDraggable, onSelect, onMove }) => {
   const icon = useMemo(() => {
-    return createNumberIcon(point.number, isActive);
-  }, [point.number, isActive]);
+    return createNumberIcon(point.number, isActive, point.type);
+  }, [point.number, isActive, point.type]);
 
   const lastCoordsRef = useRef(point.coords);
 
@@ -66,6 +66,7 @@ function areEqual(prev, next) {
   return (
     coordsEqual &&
     p1.number === p2.number &&
+    p1.type === p2.type &&
     prev.isActive === next.isActive &&
     prev.isDraggable === next.isDraggable
   );

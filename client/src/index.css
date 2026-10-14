@@ -592,6 +592,16 @@ img {
   box-shadow: 0 0 0 4px rgba(164, 223, 68, 0.55);
 }
 
+.marker-number--shelter .marker-number__circle {
+  background: rgba(220, 38, 38, 0.9);
+  border-color: #fee2e2;
+  color: #fff;
+}
+
+.marker-number--shelter.marker-number--active .marker-number__circle {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.55);
+}
+
 .gz-modal-backdrop {
   position: fixed;
   inset: 0;
