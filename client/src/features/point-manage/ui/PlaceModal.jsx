@@ -27,9 +27,8 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
         workingHours: point.workingHours || "Щодня 09:00 – 22:00",
         locationText: point.locationText || "Центральна частина комплексу",
         type: point.type || "",
-        imageUrl:
-          // point.imageUrl ||
-          GoodZoneImg
+        // Внешние фото (goodzonehotel.com.ua) не показываем — только локальные из client/public
+        imageUrl: point.imageUrl?.startsWith("/") ? point.imageUrl : GoodZoneImg,
       });
     }
   }, [point]);
