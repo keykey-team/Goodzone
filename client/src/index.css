@@ -1069,6 +1069,14 @@ img {
   color: #ffffff;
 }
 
+.gz-object-route-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px 14px;
+  font-size: 14px;
+}
+
 .gz-object-desc {
   margin-top: 4px;
   color: #0D0D0D;

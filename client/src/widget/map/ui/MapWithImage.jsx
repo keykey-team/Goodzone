@@ -17,11 +17,12 @@ import QrSidebar from "../../map-sidebar/ui/QrSidebar";
 import RouteCreateModal from "../../../features/route-create/ui/RouteCreateModal";
 import RouteChoiceModal from "../../../features/map-route-choice/ui/RouteChoiceModal";
 import RouteEditModal from "../../../features/route-edit/ui/RouteEditModal";
-import MapImage from "../../../assets/map-actual.jpg";
 import { bounds } from "../config/mapConfig";
 import AddPointController from "../../../features/map-add-point/ui/AddPointController";
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
 import { useMapWithImageModel } from "../model/useMapWithImageModel";
+
+const MapImage = `${process.env.PUBLIC_URL}/1793011231118-IMG_4808_ukryttia_v3.jpg`;
 
 const MarkerScaleByZoom = () => {
   const map = useMap();
@@ -367,6 +368,11 @@ const MapWithImage = ({ mode = "user" }) => {
         onClose={() => model.setIsPointModalOpen(false)}
         onSave={model.handlePointUpdated}
         onDelete={model.handleDeletePoint}
+        onRouteFromReception={
+          model.receptionPoint && model.selectedPoint?.id !== model.receptionPoint.id
+            ? () => model.handleBuildRouteFromReception(model.selectedPoint.id)
+            : undefined
+        }
       />
 
       <RouteCreateModal

@@ -84,7 +84,15 @@ function getInitialForm(point) {
   };
 }
 
-const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
+const PlaceModal = ({
+  open,
+  point,
+  isAdmin,
+  onClose,
+  onSave,
+  onDelete,
+  onRouteFromReception,
+}) => {
   const [form, setForm] = useState(() => getInitialForm(point));
 
   const fileInputRef = useRef(null);
@@ -686,6 +694,19 @@ const PlaceModal = ({ open, point, isAdmin, onClose, onSave, onDelete }) => {
                     <strong>РОЗТАШУВАННЯ: </strong>
                     <span>{form.locationText}</span>
                   </p>
+                )}
+
+                {onRouteFromReception && (
+                  <button
+                    type="button"
+                    className="gz-btn-primary gz-object-route-btn"
+                    onClick={() => {
+                      clearPointQuery();
+                      onRouteFromReception();
+                    }}
+                  >
+                    Прокласти найкоротший маршрут з рецепції
+                  </button>
                 )}
               </>
             )}

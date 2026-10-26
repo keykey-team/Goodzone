@@ -137,46 +137,65 @@ export async function getRoutePath(req, res) {
       toPointId: r.toPointId.toString(),
     }));
 
+    // длина полилинии маршрута (в пикселях карты)
+    function routeLength(coords = []) {
+      let len = 0;
+      for (let i = 1; i < coords.length; i++) {
+        const [y1, x1] = coords[i - 1];
+        const [y2, x2] = coords[i];
+        len += Math.hypot(y2 - y1, x2 - x1);
+      }
+      return len;
+    }
+
     // 2) строим граф
-    const adj = {}; // nodeId -> [{ to, routeId }]
+    const adj = {}; // nodeId -> [{ to, routeId, weight }]
     const byId = {}; // routeId -> route
 
     for (const r of routes) {
       const a = r.fromPointId;
       const b = r.toPointId;
+      const weight = routeLength(r.coords);
 
       byId[r._id] = r;
 
       if (!adj[a]) adj[a] = [];
       if (!adj[b]) adj[b] = [];
 
-      adj[a].push({ to: b, routeId: r._id });
-      adj[b].push({ to: a, routeId: r._id }); // двусторонние
+      adj[a].push({ to: b, routeId: r._id, weight });
+      adj[b].push({ to: a, routeId: r._id, weight }); // двусторонние
     }
 
-    // BFS
-    function bfs(start, target, bannedRouteIds = new Set()) {
-      const q = [start];
-      const visited = new Set([start]);
+    // Дейкстра: самый короткий путь по длине, а не по числу отрезков
+    function shortestPath(start, target, bannedRouteIds = new Set()) {
+      const dist = { [start]: 0 };
+      const done = new Set();
       const prev = {}; // node -> { prevNode, routeId }
 
-      while (q.length) {
-        const cur = q.shift();
-        if (cur === target) break;
+      while (true) {
+        // узлов немного, поэтому без кучи — ищем ближайший необработанный
+        let cur = null;
+        for (const node in dist) {
+          if (!done.has(node) && (cur === null || dist[node] < dist[cur])) {
+            cur = node;
+          }
+        }
+        if (cur === null || cur === target) break;
+        done.add(cur);
 
         for (const edge of adj[cur] || []) {
           if (bannedRouteIds.has(edge.routeId)) continue;
 
           const nxt = edge.to;
-          if (!visited.has(nxt)) {
-            visited.add(nxt);
+          const nd = dist[cur] + edge.weight;
+          if (!done.has(nxt) && (dist[nxt] === undefined || nd < dist[nxt])) {
+            dist[nxt] = nd;
             prev[nxt] = { prevNode: cur, routeId: edge.routeId };
-            q.push(nxt);
           }
         }
       }
 
-      if (!visited.has(target)) return null;
+      if (dist[target] === undefined) return null;
 
       const steps = [];
       let cur = target;
@@ -232,13 +251,8 @@ export async function getRoutePath(req, res) {
           (a === fromStr && b === toStr) || (a === toStr && b === fromStr)
         );
       })
-      .map((r) => [
-        {
-          from: r.fromPointId === fromStr ? fromStr : toStr,
-          to: r.fromPointId === fromStr ? toStr : fromStr,
-          route: r,
-        },
-      ]);
+      // шаг всегда from -> to; buildVariant сам развернёт coords, если маршрут сохранён наоборот
+      .map((r) => [{ from: fromStr, to: toStr, route: r }]);
 
     const directVariants = directSteps
       .map((steps) => buildVariant(steps, fromStr))
@@ -246,7 +260,7 @@ export async function getRoutePath(req, res) {
       .map((v) => ({ ...v, type: "direct" }));
 
     // 4) самый короткий путь
-    const shortestSteps = bfs(fromStr, toStr);
+    const shortestSteps = shortestPath(fromStr, toStr);
     const shortestVariant = shortestSteps
       ? { ...buildVariant(shortestSteps, fromStr), type: "shortest" }
       : null;
@@ -257,7 +271,7 @@ export async function getRoutePath(req, res) {
     );
     let altVariant = null;
     if (bannedDirectIds.size > 0) {
-      const altSteps = bfs(fromStr, toStr, bannedDirectIds);
+      const altSteps = shortestPath(fromStr, toStr, bannedDirectIds);
       if (altSteps) {
         altVariant = {
           ...buildVariant(altSteps, fromStr),

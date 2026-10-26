@@ -141,7 +141,8 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
     setActiveRouteCoords(variant.coords || []);
   };
 
-  const handleBuildRoute = async (fromId, toId) => {
+  // pickShortest: сразу показать кратчайший вариант, без модалки выбора
+  const handleBuildRoute = async (fromId, toId, { pickShortest = false } = {}) => {
   setRouteFromId(fromId);
   setRouteToId(toId);
   setActiveRouteCoords([]);
@@ -166,7 +167,8 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
       return;
     }
 
-    if (variants.length === 1) {
+    // варианты уже отсортированы по длине — первый самый короткий
+    if (variants.length === 1 || pickShortest) {
       setActiveRouteCoords(variants[0].coords || []);
       return;
     }
@@ -180,6 +182,21 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
 
   const fromPoint = points.find((p) => p.id === routeFromId);
   const toPoint = points.find((p) => p.id === routeToId);
+
+  // Рецепция — точка "Головний корпус / Reception" (№31)
+  const receptionPoint = useMemo(
+    () =>
+      points.find((p) => /reception|рецепц/i.test(p.name || "")) ||
+      points.find((p) => String(p.number) === "31") ||
+      null,
+    [points]
+  );
+
+  const handleBuildRouteFromReception = (toId) => {
+    if (!receptionPoint || !toId) return;
+    setIsPointModalOpen(false);
+    handleBuildRoute(receptionPoint.id, toId, { pickShortest: true });
+  };
 
   const toggleAddPointMode = () => {
     if (!isAdmin) return;
@@ -205,6 +222,7 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
     isRouteEditOpen,
     fromPoint,
     toPoint,
+    receptionPoint,
     featureGroupRef,
 
     setRouteFromId,
@@ -227,6 +245,7 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
     handleRouteDeleted,
     handleChooseRouteVariant,
     handleBuildRoute,
+    handleBuildRouteFromReception,
     toggleAddPointMode,
   };
 };
