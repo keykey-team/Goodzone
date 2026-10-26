@@ -365,12 +365,19 @@ const PlaceModal = ({
         style={{ transform: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="gz-modal-close" onClick={handleClose}>
+        <button
+          type="button"
+          className="gz-modal-close"
+          onClick={handleClose}
+          aria-label="Закрити"
+        >
           <Cross />
         </button>
 
         <div className="gz-object-content">
-          <div className="gz-object-image" style={{ position: "relative" }}>
+          <div className="gz-object-image">
+            {/* фото растягивается на всю высоту модалки (object-fit: cover) */}
+            <div className="gz-object-photo">
             {resolvedImageSrc ? (
               <img
                 key={imageKey}
@@ -400,9 +407,10 @@ const PlaceModal = ({
                 />
               </div>
             )}
+            </div>
 
             {isAdmin && (
-              <div className="uploading-img-wrapper" style={{ marginTop: 8 }}>
+              <div className="uploading-img-wrapper">
                 <input
                   type="file"
                   accept="image/*"
@@ -699,7 +707,7 @@ const PlaceModal = ({
                 {onRouteFromReception && (
                   <button
                     type="button"
-                    className="gz-btn-primary gz-object-route-btn"
+                    className="gz-object-route-btn"
                     onClick={() => {
                       clearPointQuery();
                       onRouteFromReception();

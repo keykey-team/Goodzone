@@ -227,20 +227,21 @@ const QrSidebar = ({
             />
           </div>
 
-          <button className="gz-route-btn" onClick={handleBuildClick}>
-            ПРОКЛАСТИ МАРШРУТ
-          </button>
-
-          {/* 🔥 КНОПКА СБРОСА */}
-          {(routeFromId || routeToId) && (
-            <button
-              className="gz-route-btn gz-route-btn--secondary"
-              style={{ marginTop: 10 }}
-              onClick={handleResetRoute}
-            >
-              СКИНУТИ МАРШРУТ
+          <div className="gz-route-actions">
+            <button className="gz-route-btn" onClick={handleBuildClick}>
+              ПРОКЛАСТИ МАРШРУТ
             </button>
-          )}
+
+            {/* 🔥 КНОПКА СБРОСА */}
+            {(routeFromId || routeToId) && (
+              <button
+                className="gz-route-btn gz-route-btn--secondary"
+                onClick={handleResetRoute}
+              >
+                СКИНУТИ МАРШРУТ
+              </button>
+            )}
+          </div>
 
           {error && (
             <p style={{ color: "red", marginTop: 10, fontSize: 14 }}>
