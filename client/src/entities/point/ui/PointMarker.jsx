@@ -1,12 +1,17 @@
 import React, { memo, useMemo, useRef } from "react";
 import { Marker } from "react-leaflet";
 import { createNumberIcon } from "../lib/createNumberIcon";
+import { createShelterPinIcon } from "../lib/createShelterPinIcon";
+import { isShelterPoint } from "../lib/isShelterPoint";
 
 
 const PointMarker = ({ point, isActive, isDraggable, onSelect, onMove }) => {
+  const isShelter = isShelterPoint(point);
+
   const icon = useMemo(() => {
-    return createNumberIcon(point.number, isActive, point.type);
-  }, [point.number, isActive, point.type]);
+    if (isShelter) return createShelterPinIcon(point.number, isActive);
+    return createNumberIcon(point.number, isActive);
+  }, [point.number, isActive, isShelter]);
 
   const lastCoordsRef = useRef(point.coords);
 

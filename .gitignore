@@ -44,6 +44,9 @@ package-lock.json
 # Coverage from tests
 coverage/
 
+# Промежуточные артефакты генератора сетки маршрутов (маска, оверлеи, выгрузки БД)
+server/scripts/route-grid/output/
+
 # Optional: Storybook output
 out-storybook/
 storybook-static/

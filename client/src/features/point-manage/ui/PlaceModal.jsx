@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { apiBase } from "../../../shared/config/apiBase";
 import Cross from "../../../shared/ui/Cross";
+import { isShelterPoint } from "../../../entities/point/lib/isShelterPoint";
 import GoodZoneImg from "../../../assets/goodzone.png";
 import GoodZoneImgArrow from "../../../assets/external-link-svgrepo-com.svg";
 import GoodZoneLogo from "../../../assets/logo-title.svg";
@@ -510,7 +511,15 @@ const PlaceModal = ({
                   placeholder="Назва об’єкта"
                 />
               ) : (
-                <div className="gz-object-name">{form.name}</div>
+                <div
+                  className={
+                    isShelterPoint(point)
+                      ? "gz-object-name gz-object-name--shelter"
+                      : "gz-object-name"
+                  }
+                >
+                  {form.name}
+                </div>
               )}
             </div>
 

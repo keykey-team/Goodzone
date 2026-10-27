@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IconWrapper } from "./IconWrapper";
 import SearchIcon from "../../../../shared/icons/SearchIcon";
+import { isShelterPoint } from "../../../../entities/point/lib/isShelterPoint";
 
 const ObjectSelect = ({ label, value, onChange, points }) => {
   const [open, setOpen] = useState(false);
@@ -92,7 +93,11 @@ const ObjectSelect = ({ label, value, onChange, points }) => {
       >
         {/* “шапка” селекта: иконка + инпут + стрелка */}
         <div
-          className="gz-object-item gz-object-item-select"
+          className={
+            isShelterPoint(selected)
+              ? "gz-object-item gz-object-item-select gz-object-item--shelter"
+              : "gz-object-item gz-object-item-select"
+          }
           onClick={() => setOpen(true)}
         >
           {selected && <IconWrapper>{selected.number}</IconWrapper>}
@@ -139,7 +144,11 @@ const ObjectSelect = ({ label, value, onChange, points }) => {
               <button
                 key={p.id}
                 type="button"
-                className="gz-object-item gz-custom-select__option"
+                className={
+                  isShelterPoint(p)
+                    ? "gz-object-item gz-custom-select__option gz-object-item--shelter"
+                    : "gz-object-item gz-custom-select__option"
+                }
                 onClick={() => handleSelect(p)}
               >
                 <IconWrapper>{p.number}</IconWrapper>

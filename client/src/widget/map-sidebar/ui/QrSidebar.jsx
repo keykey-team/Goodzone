@@ -5,6 +5,7 @@ import SearchIcon from "../../../shared/icons/SearchIcon";
 import ObjectSelect from "./common/Select";
 import { IconWrapper } from "./common/IconWrapper";
 import Header from "./Header";
+import { isShelterPoint } from "../../../entities/point/lib/isShelterPoint";
 
 const QrSidebar = ({
   isAdmin,
@@ -16,6 +17,7 @@ const QrSidebar = ({
   onChangeRouteFrom,
   onChangeRouteTo,
   onBuildRoute,
+  routeNotFound,
   addPointMode,
   onToggleAddPointMode,
   onOpenQr,
@@ -145,11 +147,13 @@ const QrSidebar = ({
                   <button
                     key={p.id}
                     type="button"
-                    className={
-                      isActive
-                        ? "gz-object-item gz-object-item--active"
-                        : "gz-object-item"
-                    }
+                    className={[
+                      "gz-object-item",
+                      isActive && "gz-object-item--active",
+                      isShelterPoint(p) && "gz-object-item--shelter",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     onClick={() => {
                       onSelectPoint(p);
                       setObjectsOpen(false);
@@ -246,6 +250,12 @@ const QrSidebar = ({
           {error && (
             <p style={{ color: "red", marginTop: 10, fontSize: 14 }}>
               {error}
+            </p>
+          )}
+
+          {!error && routeNotFound && (
+            <p style={{ color: "red", marginTop: 10, fontSize: 14 }}>
+              Маршрут не знайдено: між цими об’єктами немає прокладених доріжок.
             </p>
           )}
         </section>

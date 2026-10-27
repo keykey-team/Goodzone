@@ -355,6 +355,7 @@ const MapWithImage = ({ mode = "user" }) => {
         onChangeRouteFrom={model.setRouteFromId}
         onChangeRouteTo={model.setRouteToId}
         onBuildRoute={handleBuildRouteAndScroll}
+        routeNotFound={model.routeNotFound}
         addPointMode={model.addPointMode}
         onToggleAddPointMode={model.toggleAddPointMode}
         onOpenQr={setQrPoint}

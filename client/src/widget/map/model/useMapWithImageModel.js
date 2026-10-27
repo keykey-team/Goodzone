@@ -15,6 +15,15 @@ import {
   getRouteVariants,
 } from "../../../features/map-routes/model/mapRoutesService";
 
+// Порядок точки в списках: сперва числовая база номера («12» и «12(1)» → 12),
+// при равенстве — номер дубля. Старое сравнение `a.number - b.number` на
+// строковых номерах давало NaN и непредсказуемый порядок.
+const pointSortValue = (point) => {
+  if (Number.isFinite(point.numberBase)) return point.numberBase;
+  const parsedNumber = parseInt(point.number, 10);
+  return Number.isFinite(parsedNumber) ? parsedNumber : 0;
+};
+
 export const useMapWithImageModel = ({ mode = "user" }) => {
   const isAdmin = mode === "admin";
 
@@ -35,6 +44,7 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
 
   const [routeChoiceOpen, setRouteChoiceOpen] = useState(false);
   const [routeVariants, setRouteVariants] = useState([]);
+  const [routeNotFound, setRouteNotFound] = useState(false);
 
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [isRouteEditOpen, setIsRouteEditOpen] = useState(false);
@@ -49,7 +59,12 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
   }, []);
 
   const sortedPoints = useMemo(
-    () => [...points].sort((a, b) => (a.number || 0) - (b.number || 0)),
+    () =>
+      [...points].sort(
+        (a, b) =>
+          pointSortValue(a) - pointSortValue(b) ||
+          (a.numberDup || 0) - (b.numberDup || 0)
+      ),
     [points]
   );
 
@@ -142,43 +157,38 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
   };
 
   // pickShortest: сразу показать кратчайший вариант, без модалки выбора
-  const handleBuildRoute = async (fromId, toId, { pickShortest = false } = {}) => {
-  setRouteFromId(fromId);
-  setRouteToId(toId);
-  setActiveRouteCoords([]);
-  setRouteChoiceOpen(false);
-  setRouteVariants([]);
+  const handleBuildRoute = (fromId, toId, { pickShortest = false } = {}) => {
+    setRouteFromId(fromId);
+    setRouteToId(toId);
+    setActiveRouteCoords([]);
+    setRouteChoiceOpen(false);
+    setRouteVariants([]);
+    setRouteNotFound(false);
 
-  if (!fromId || !toId || fromId === toId) return;
+    if (!fromId || !toId || fromId === toId) return;
 
-  try {
-    // ПЕРЕДАЁМ ВСЕ МАРШРУТЫ
-    const variants = await getRouteVariants(fromId, toId, routes, {
-      maxDepth: 10,      // можно подправить под свои масштабы
-      maxVariants: 200,  // лимит на количество найденных путей
-    });
+    try {
+      const variants = getRouteVariants(fromId, toId, { points, routes });
 
-    if (!variants.length) {
-      const from = points.find((p) => p.id === fromId);
-      const to = points.find((p) => p.id === toId);
-      if (from && to) {
-        setActiveRouteCoords([from.coords, to.coords]);
+      if (!variants.length) {
+        // Пути по нарисованным дорожкам нет. Прямую линию «сквозь стены»
+        // больше не рисуем — честно сообщаем, что маршрут не найден.
+        setRouteNotFound(true);
+        return;
       }
-      return;
-    }
 
-    // варианты уже отсортированы по длине — первый самый короткий
-    if (variants.length === 1 || pickShortest) {
-      setActiveRouteCoords(variants[0].coords || []);
-      return;
-    }
+      // варианты уже отсортированы по длине — первый самый короткий
+      if (variants.length === 1 || pickShortest) {
+        setActiveRouteCoords(variants[0].coords || []);
+        return;
+      }
 
-    setRouteVariants(variants);
-    setRouteChoiceOpen(true);
-  } catch (e) {
-    console.error(e);
-  }
-};
+      setRouteVariants(variants);
+      setRouteChoiceOpen(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fromPoint = points.find((p) => p.id === routeFromId);
   const toPoint = points.find((p) => p.id === routeToId);
@@ -218,6 +228,7 @@ export const useMapWithImageModel = ({ mode = "user" }) => {
     activeRouteCoords,
     routeChoiceOpen,
     routeVariants,
+    routeNotFound,
     selectedRoute,
     isRouteEditOpen,
     fromPoint,

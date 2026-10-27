@@ -1,3 +1,8 @@
+:root {
+  /* Цвет укрытия: пин на карте и пункты в списках, чтобы укрытие отличалось от остальной инфраструктуры */
+  --gz-shelter-color: #dc2626;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -51,7 +56,8 @@ body,
 
 /* Масштабируем маркеры (divIcon) без пересоздания иконок */
 /* Leaflet управляет позицией — мы её не трогаем */
-.leaflet-container .marker-number {
+.leaflet-container .marker-number,
+.leaflet-container .marker-pin {
   pointer-events: auto;
 }
 
@@ -59,6 +65,13 @@ body,
 .leaflet-container .marker-number .marker-number__circle {
   transform: scale(var(--marker-scale, 1));
   transform-origin: center;
+  will-change: transform;
+}
+
+/* Пин масштабируется от острия, чтобы при зуме он не «уезжал» с координаты */
+.leaflet-container .marker-pin .marker-pin__shape {
+  transform: scale(var(--marker-scale, 1));
+  transform-origin: center bottom;
   will-change: transform;
 }
 
@@ -631,14 +644,51 @@ img {
   box-shadow: 0 0 0 4px rgba(164, 223, 68, 0.55);
 }
 
-.marker-number--shelter .marker-number__circle {
-  background: rgba(220, 38, 38, 0.9);
-  border-color: #fee2e2;
+/* Пин укрытия (как в Google Maps) */
+.marker-pin__shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+.marker-pin__body {
+  fill: var(--gz-shelter-color);
+  stroke: #fee2e2;
+  stroke-width: 1.5;
+}
+
+.marker-pin__badge {
+  fill: #fff;
+}
+
+.marker-pin__number {
+  fill: var(--gz-shelter-color);
+  font-size: 9px;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Укрытие в списках объектов, в селектах маршрута и в карточке объекта */
+.gz-object-name.gz-object-name--shelter,
+.gz-object-item--shelter .gz-object-name,
+.gz-object-item--shelter input {
+  color: var(--gz-shelter-color);
+}
+
+.gz-object-item--shelter .gz-search-icon {
+  border-color: var(--gz-shelter-color);
+}
+
+.gz-object-item--shelter .icon__wrapper {
+  border-color: var(--gz-shelter-color);
+  background-color: var(--gz-shelter-color);
   color: #fff;
 }
 
-.marker-number--shelter.marker-number--active .marker-number__circle {
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.55);
+.marker-pin--active .marker-pin__shape {
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.9));
 }
 
 .gz-modal-backdrop {
