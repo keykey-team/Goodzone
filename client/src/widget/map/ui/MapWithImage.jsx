@@ -22,7 +22,8 @@ import AddPointController from "../../../features/map-add-point/ui/AddPointContr
 import { RoutePolyline } from "../../../entities/route/ui/RoutePoline";
 import { useMapWithImageModel } from "../model/useMapWithImageModel";
 
-const MapImage = `${process.env.PUBLIC_URL}/1793011231118-IMG_4808_ukryttia_v3.jpg`;
+// 4000px WebP (~2.3 МБ), сжат из исходника 9643x10293; растягивается на bounds из mapConfig
+const MapImage = `${process.env.PUBLIC_URL}/map-ukryttia-v3.webp`;
 
 const MarkerScaleByZoom = () => {
   const map = useMap();
